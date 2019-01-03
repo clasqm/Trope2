@@ -1,3 +1,1283 @@
+#!env yab
+
+//Trope v0.9
+
+//By Michel Clasquin-Johnson
+//Public Domain software 2014
+
+// set DEBUG = 1 to print out all messages on the console
+DEBUG = 1
+
+import libclasqm_main
+
+///////////////////INITIAL SETTING UP STUFF/////////////////
+
+//Create directories and files if they do not yet exist
+system("mkdir -p /boot/home/config/settings/Trope")
+system("touch /boot/home/config/settings/Trope/Trope.settings")
+system("touch /boot/home/config/settings/Trope/Trope.recent")
+
+//Global Variables - declared here just for reference
+ xorigin = 0
+ yorigin = 0
+ xwidth = 0
+ yheight = 0
+SearchText$=""
+ReplaceText$ = ""
+CurrentFile$ = ""
+DroppedFile$ = ""
+WordWrap = 0
+Backup = 0
+Toolbar = 1
+FileIsOpen = 0
+tempval$ = ""
+tempval = 0
+Snippet$ = ""
+dim RecentFile$(10)
+dim msg$(1)
+Language$ = ""
+autocomplete=0
+PrintError=0
+
+//But these are for real
+AppName$ = "Trope" 
+AppVersion$ = "v0.9"
+SettingsDir$ = "/boot/home/config/settings/Trope/"
+SettingsFile$ = SettingsDir$ +"Trope.settings"
+RecentFile$ = SettingsDir$ +"Trope.recent"
+PrintSetupFile$= SettingsDir$ +"printsetup"
+OpenWindow()
+  
+//open file specified on the command line or passed along by the OS
+if peek("argument") <> 0 then
+	CurrentFile$ = (peek$("argument"))
+	OpenFile(CurrentFile$)
+	FileIsOpen=1
+	RegenerateRecent()
+end if
+if peek$("refsreceived") <> "" then
+	CurrentFile$ = (peek$("refsreceived"))
+	OpenFile(CurrentFile$)
+	FileIsOpen=1
+	RegenerateRecent()
+end if
+
+/////////////Main Message Loop//////////////////
+//THis main loop was getting too large for comfort and has been 
+//split up into a number of subroutines
+while(not leavingLoop)
+	sleep 0.01
+	nCommands = token(message$, msg$(), "|")
+	for everyCommand = 1 to nCommands
+		if(DEBUG and msg$(everyCommand)<>"") print msg$(everyCommand)
+//		LanguageLoop(msg$(everyCommand))
+		TropeFileLoop(msg$(everyCommand))
+		TropeEditLoop(msg$(everyCommand))
+		TropeSettingsLoop(msg$(everyCommand))
+		TropeHelpLoop(msg$(everyCommand))
+		if AppName$ = "Rondel" RondelLoop(msg$(everyCommand))
+		switch(msg$(everyCommand))
+		///////////////////QUIT///////////////////
+			case "_QuitRequested":
+			case "MainWindow:_QuitRequested":
+			case "MenuView:File:Quit":
+			case "QuitButton":
+				leavingLoop = true
+				break
+			case "MainWindow:Activated":
+			//check if another instance has changed the settings
+			GetSettings()
+			break
+		
+		/////////////RECENT//////////////
+			case "MenuView:Recent...:Clear Recent Files":
+				DeleteRecent()
+				for f = 1 to 10
+					RecentFile$(f) =""
+				next f
+				Menu set "Recent...","Clear Recent Files", "disable", "MenuView"
+				break
+						
+		////////StatusButton//////////////
+			case "StatusButton":
+				RefreshStatusbar()
+				break
+		///////PasteSnippetButton////////
+			case "PasteSnippetButton"
+				PasteSnippet()
+				break
+		//////////////////////////////////
+			default:
+				break
+		end switch
+
+		//Check if user pressed ENTER in the search field
+		//if left$(msg$(everyCommand), 12) = "SearchField:" then
+		//	SearchText$ = trim$(mid$(msg$(everyCommand),13))
+		//	if SearchText$ <>"" then
+		//		Textcontrol set "SearchField", ""
+		//		Findstring(SearchText$)
+		//		menu set "Edit", "Find Again", "Enable", "MenuView" //after initial find, find again becomes available
+		//	end if
+		//end if
+
+		//Check if file has been dropped
+		if left$(msg$(everyCommand), 20) = "MainWindow:_Dropped:" then
+			DroppedFile$ = mid$(msg$(everyCommand), 21)
+			if FileIsOpen = 0 then
+				OpenFile(DroppedFile$)
+				CurrentFile$ = DroppedFile$
+				RegenerateRecent()
+				if CurrentFile$ <> "" Menu set "File", "Revert", "enable", "MenuView"
+			end if
+		end if
+		
+		// Check if user has requested a recent file
+		if left$(msg$(everyCommand), 19) = "MenuView:Recent...:" and mid$(msg$(everyCommand),20) <> "Clear Recent Files" then
+			//if TextFileCheck(mid$(msg$(everyCommand),20)) = 1 break
+			OpenFile(mid$(msg$(everyCommand),20))
+			CurrentFile$ = mid$(msg$(everyCommand),20)
+			FileIsOpen = 1
+			RegenerateRecent()
+			if CurrentFile$ <> "" Menu set "File", "Revert", "enable", "MenuView"
+		end if
+
+		//check if user wants to insert a high-ASCII character
+		if left$(msg$(everyCommand), 14) = "MenuView:Ascii" then
+			ReplaceChar(msg$(everyCommand))
+			FileIsOpen = 1
+		end if
+		
+		//check if user wants to insert a Unicode character
+		if left$(msg$(everyCommand), 16) = "MenuView:Unicode" then
+			ReplaceChar(msg$(everyCommand))
+			FileIsOpen = 1
+		end if
+		
+		//check if user selected a snippet
+		if left$(msg$(everyCommand), 15) = "SnippetDropBox:" Snippet$ = mid$(msg$(everyCommand), 16)
+		
+		//check if user requestes lorem ipsum text
+		if left$(msg$(everyCommand), 30) = "MenuView:Help:Lorem Ipsum ...:" then
+			InsertLoremIpsum(msg$(everyCommand))
+		endif
+		
+		RefreshStatusbar()
+
+	next everyCommand
+	//Check if user has just entered text without doing anything else. Like saving.
+	if textedit get "EditBox", "textlength" > 0 FileIsOpen = 1
+wend
+
+CloseWindow(0)
+
+end
+
+sub ChangeTitleBar()
+######Trope subroutine#####
+//change tab content
+	local tablang$		
+	if Language$ <> "" then
+		tablang$ = " (" + Language$
+		if autocomplete =0 then
+			tablang$ = tablang$ + " - assist OFF)"
+		elseif autocomplete = 1 then
+			tablang$ = tablang$ +" - assist ON)" 
+		endif
+	else
+		tablang$ = " (No Language Selected)"
+	endif 
+
+	window set "MainWindow", "Title", AppName$ + ": " + ParsePath2Filename$(CurrentFile$) + tablang$
+end sub
+
+sub CharInsertToMenu()
+######Trope subroutine#####
+	restore 1: MakeCharSubmenu("Ascii", "1")
+	restore A: MakeCharSubmenu("Ascii", "A")
+	restore B: MakeCharSubmenu("Ascii", "B")
+	restore C: MakeCharSubmenu("Ascii", "C")
+	restore D: MakeCharSubmenu("Ascii", "D")
+	restore E: MakeCharSubmenu("Ascii", "E")
+	restore F: MakeCharSubmenu("Ascii", "F")
+	restore G: MakeCharSubmenu("Ascii", "G")
+	restore H: MakeCharSubmenu("Ascii", "H")
+	restore I: MakeCharSubmenu("Ascii", "I")
+	restore J: MakeCharSubmenu("Ascii", "J")
+	restore K: MakeCharSubmenu("Ascii", "K")
+	restore L: MakeCharSubmenu("Ascii", "L")
+	restore M: MakeCharSubmenu("Ascii", "M")
+	restore N: MakeCharSubmenu("Ascii", "N")
+	restore O: MakeCharSubmenu("Ascii", "O")
+	restore P: MakeCharSubmenu("Ascii", "P")
+	restore Q: MakeCharSubmenu("Ascii", "Q")
+	restore R: MakeCharSubmenu("Ascii", "R")
+	restore S: MakeCharSubmenu("Ascii", "S")
+	restore T: MakeCharSubmenu("Ascii", "T")
+	restore U: MakeCharSubmenu("Ascii", "U")
+	restore V: MakeCharSubmenu("Ascii", "V")
+	restore W: MakeCharSubmenu("Ascii", "W")
+	restore X: MakeCharSubmenu("Ascii", "X")
+	restore Y: MakeCharSubmenu("Ascii", "Y")
+	restore Z: MakeCharSubmenu("Ascii", "Z")
+	restore More: MakeCharSubmenu("Ascii", "Æ")
+	restore U1:MakeCharSubmenu("Unicode", "1")
+	Restore UA: MakeCharSubmenu("Unicode", "A")
+	restore UB: MakeCharSubmenu("Unicode", "B")
+	restore UC: MakeCharSubmenu("Unicode", "C")
+	restore UD: MakeCharSubmenu("Unicode", "D")
+	restore UE: MakeCharSubmenu("Unicode", "E")
+	restore UF: MakeCharSubmenu("Unicode", "F")
+	restore UG: MakeCharSubmenu("Unicode", "G")
+	restore UH: MakeCharSubmenu("Unicode", "H")
+	restore UI: MakeCharSubmenu("Unicode", "I")
+	restore UJ: MakeCharSubmenu("Unicode", "J")
+	restore UK: MakeCharSubmenu("Unicode", "K")
+	restore UL: MakeCharSubmenu("Unicode", "L")
+	restore UM: MakeCharSubmenu("Unicode", "M")
+	restore UN: MakeCharSubmenu("Unicode", "N")
+	restore UO: MakeCharSubmenu("Unicode", "O")
+	restore UP: MakeCharSubmenu("Unicode", "P")
+	restore UQ: MakeCharSubmenu("Unicode", "Q")
+	restore UR: MakeCharSubmenu("Unicode", "R")
+	restore US: MakeCharSubmenu("Unicode", "S")
+	restore UT: MakeCharSubmenu("Unicode", "T")
+	restore UU: MakeCharSubmenu("Unicode", "U")
+	restore UV: MakeCharSubmenu("Unicode", "V")
+	restore UW: MakeCharSubmenu("Unicode", "W")
+	restore UX: MakeCharSubmenu("Unicode", "X")
+	restore UY: MakeCharSubmenu("Unicode", "Y")
+	restore UZ: MakeCharSubmenu("Unicode", "Z") 
+end sub
+
+sub CheckTransfer()
+######Trope subroutine#####
+	if FileIsOpen = 1 then
+		Submenu set "File", "Transfer...", "to Pe", "enable", "MenuView"
+		Submenu set "File", "Transfer...", "to StyledEdit", "enable", "MenuView"
+		if FileExists("boot/system/apps/Rondel/Rondel") and Appname$ <> "Trope" Submenu set "File", "Transfer...", "to Rondel", "enable", "MenuView"
+		if FileExists("/boot/system/apps/Trope/Trope") and Appname$ <> "Rondel" Submenu set "File", "Transfer...", "to Trope", "enable", "MenuView"
+	end if
+end sub
+
+######Trope subroutine#####
+// Close down the main window, but save settings first
+sub CloseWindow(now)
+	if now = 0 SaveFileFirst()
+	SaveSettings()
+	window close "MainWindow"
+	RefreshRecent()
+	return
+end sub
+
+sub DeleteRecent()
+######Trope subroutine#####
+	local streamhandle
+	for f = 1 to 10
+		menu set "Recent...", RecentFile$(f), "remove", "MenuView"
+	next f
+	streamhandle = open(RecentFile$, "w")
+	close streamhandle
+end sub
+
+sub GetSettings()
+######Trope subroutine#####
+	local streamhandle
+	streamhandle = open(SettingsFile$, "r")
+		line input #1 tempval$: xorigin = val(tempval$)
+		if xorigin = 0 then //ie if the settings file was empty
+			xorigin = 50 //reset xorigin, use defaults for others
+			close #1
+			return
+		else
+			line input #1 tempval$: yorigin = val(tempval$)
+			line input #1 tempval$: xwidth = val(tempval$)
+			line input #1 tempval$: yheight = val(tempval$)
+			line input #1 tempval$: WordWrap = val(tempval$)
+			line input #1 tempval$: Backup = val(tempval$)
+			line input #1 tempval$: Toolbar = val(tempval$)
+		end if
+	close streamhandle
+end sub
+
+sub InsertLoremIpsum(author$)
+######Trope subroutine#####
+	local authorlength, sentences$, selection, morerandom$, dothis$
+	authorlength = len(author$)
+	author$ = right$(author$, authorlength - 30)
+	author$ = lower$(author$)
+	selection = alert "How many sentences do you want?", "5", "10", "20", "none" 
+	switch selection
+	case 1
+		sentences$ = "5"
+		break
+	case 2
+		sentences$ = "10"
+		break
+	case 3
+		sentences$ = "20"
+		break
+	end switch
+	selection = alert "Apply extra randomization?", "Yes", "", "No", "none" 
+	if selection = 1 morerandom$ = "--randomize"
+	dothis$ = "lorem --" + author$ + " -s " + sentences$ + " " + morerandom$ 
+	dothis$ = system$(dothis$)
+	textedit add "EditBox", dothis$
+end sub
+
+sub MakeButtonbar()
+######Trope subroutine#####
+	layout "Bottom, Left", "MainWindow"
+	Button 4,23 to 42,48, "NewButton", "⛋New", "MenuView"
+	Tooltip "NewButton","Open a new window"
+	Button 44,23 to 82,48, "OpenButton", "Opn☐", "MenuView"
+	Tooltip "OpenButton", "Open a  file"
+	Button 84,23 to 122,48, "SaveButton", "Sav☑", "MenuView"
+	Tooltip "SaveButton", "Save this file"
+	Button 124,23 to 162,48, "UndoButton", "U/R", "MenuView"
+	Tooltip "UndoButton", "Undo/Redo the last change"
+	Button 164,23 to 202,48, "CutButton", "✄⚳Cut", "MenuView"
+	Tooltip "CutButton", "Cut selection to clipboard"
+	Button 204,23 to 242,48, "CopyButton", "⚢Cpy", "MenuView"
+	Tooltip "CopyButton", "Copy selection to clipboard"
+	Button 244,23 to 282,48, "PasteButton", "⚥Pst", "MenuView"
+	Tooltip "PasteButton", "Paste from clipboard"
+	Button 284,23 to 322,48, "FindButton", "⚲Find", "MenuView"
+	Tooltip "FindButton", "Find text entered in the searchbox"
+	Button 324,23 to 362,48, "FindAgainButton", "FnA⚲⚲", "MenuView"
+	Tooltip "FindAgainButton", "Repeat the last search"
+	Button 364,23 to 402,48, "QuitButton", "⛔Quit", "MenuView"
+	Tooltip "QuitButton", "Close this window"
+	Button 404,23 to 442,48, "HelpButton", "Help", "MenuView"
+	Tooltip "HelpButton", "View help"
+	if Toolbar = 1 TropeToolbarOverlay()
+end sub
+
+sub MakeCharSubmenu(menuhead$, submenuhead$)
+######Trope subroutine#####
+	local readchar$
+	readchar$=""
+	repeat
+		read readchar$
+		if readchar$ <> "end_of_data" submenu menuhead$, submenuhead$, readchar$, "", "MenuView"
+	until(readchar$ = "end_of_data")
+end sub
+
+sub MakeEditBox()
+######Trope subroutine#####
+	layout "All", "MainWindow"
+	view 0,55 to (view get "MainWindow", "width"), (View get "MainWindow", "height") -32, "EditView", "MainWindow"
+	// don't use xheight and ywidth - user might have resized the window
+	Textedit 0, 1 to (view get "EditView", "width"), (View get "EditView", "height"), "EditBox", 3, "EditView"
+	textedit set "EditBox", "editable", true
+	textedit set "EditBox", "wordwrap", WordWrap 
+end sub
+
+sub MakeMenu()
+######Trope subroutine#####
+	//////MENUS///////
+	layout "Top, Left", "MainWindow"
+	view 0,0 to xwidth,50, "MenuView", "MainWindow"
+
+	//////FILE MENU///////
+	Menu "File", "New", "N", "MenuView"
+	Menu "File", "Open", "O", "MenuView"
+	Menu "File", "Insert", "", "MenuView"
+	Menu "File", "Save", "S", "MenuView"
+	Menu "File", "Save As", "", "MenuView"
+	//Menu "File", "Printer setup", "", "MenuView"
+	//Menu "File",  "Print", "P", "MenuView"
+	//if FileExists(PrintSetupFile$) = 0 Menu set "File",  "Print", "disable", "MenuView"
+	Menu "File", "Revert", "", "MenuView"
+	Menu set "File", "Revert", "disable", "MenuView"
+	Submenu "File", "Transfer...", "to Pe", "", "MenuView"
+	Submenu "File", "Transfer...", "to StyledEdit", "", "MenuView"
+	Submenu set "File", "Transfer...", "to Pe", "disable", "MenuView"
+	Submenu set "File", "Transfer...", "to StyledEdit", "disable", "MenuView"
+	if FileExists("/boot/system/apps/Rondel/Rondel") and AppName$ <> "Trope" then
+		Submenu "File", "Transfer...", "to Rondel", "", "MenuView"
+		Submenu set "File", "Transfer...", "to Rondel", "disable", "MenuView"
+	endif
+	if FileExists("/boot/system/apps/Trope/Trope") and AppName$ <> "Rondel" then
+		Submenu "File", "Transfer...", "to Trope", "", "MenuView"
+		Submenu set "File", "Transfer...", "to Trope", "disable", "MenuView"
+	endif
+	Menu "File", "Info", "", "MenuView"
+	Menu "File", "Quit", "Q", "MenuView"
+	
+	//////RECENT MENU///////
+	Menu "Recent...","Clear Recent Files", "", "MenuView"
+	MakeRecent()
+	
+	//////EDIT MENU//////
+	menu "Edit", "Undo/Redo", "Z", "MenuView"
+	menu "Edit", "Cut", "X", "MenuView"
+	menu "Edit", "Copy", "C", "MenuView"
+	menu "Edit", "Paste", "V", "MenuView"
+	menu "Edit", "Copy to Snippet", "", "MenuView"
+	submenu "Edit", "Spacing", "Doublespace", "", "MenuView"
+	submenu "Edit", "Spacing", "Triplespace", "", "MenuView"
+	submenu "Edit", "Spacing", "Delete blank lines", "", "MenuView"
+	submenu "Edit", "Sort", "A → Z", "", "MenuView"
+	submenu "Edit", "Sort", "Z → A", "", "MenuView"
+	submenu "Edit", "Sort", "0 → 9", "", "MenuView"
+	submenu "Edit", "Sort", "9 → 0", "", "MenuView"
+	submenu "Edit", "Whitespace", "Indent paragraphs", "", "MenuView"
+	submenu "Edit", "Whitespace", "Delete leading blanks", "", "MenuView"
+	submenu "Edit", "Whitespace", "Delete trailing blanks", "", "MenuView"
+	submenu "Edit", "Whitespace", "Delete both leading and trailing", "", "MenuView"
+	submenu "Edit", "Whitespace", "Change double spaces to single", "", "MenuView"
+	submenu "Edit", "Whitespace", "Remove consecutive duplicate lines", "", "MenuView"
+	submenu "Edit", "Whitespace", "Remove all duplicate lines", "", "MenuView"
+	submenu "Edit", "Whitespace", "Reverse line order", "", "MenuView"
+	submenu "Edit", "Whitespace", "Reverse character order", "", "MenuView"
+	submenu "Edit", "Case", "Upper case → AB CD EFGH", "", "MenuView"
+	submenu "Edit", "Case", "Lower case → ab cd efgh", "", "MenuView"
+	submenu "Edit", "Case", "Initial Caps case → Ab Cd Efgh", "", "MenuView"
+	submenu "Edit", "Case", "Title case → Ab cd Efgh", "", "MenuView"
+	submenu "Edit", "Case", "Sentence case → Ab cd efgh", "", "MenuView"
+	submenu "Edit", "Spelling", "Check Spelling", "", "MenuView" 
+	submenu "Edit", "Spelling", "Edit Personal Dictionary", "", "MenuView" 
+	submenu "Edit", "Spelling", "Check for Plagiarism", "", "MenuView" 
+	submenu "Edit", "Spelling", "Translate", "", "MenuView" 
+	submenu "Edit", "Spelling", "Thesaurus", "", "MenuView" 
+	submenu "Edit", "Spelling", "Acronyms", "", "MenuView" 
+	submenu "Edit", "Spelling", "Other Tools", "", "MenuView" 
+	submenu "Edit", "Select", "Clear Selection", "", "MenuView"
+	submenu "Edit", "Select", "Clear All", "", "MenuView"
+	submenu "Edit", "Select", "Select All", "A", "MenuView"
+	submenu "Edit", "Search", "Find", "F", "MenuView"
+	submenu "Edit", "Search", "Find Again", "G", "MenuView"
+	submenu "Edit", "Search", "Replace All", "R",  "MenuView"
+	submenu "Edit", "Numbering", "Number all lines", "", "MenuView"
+	submenu "Edit", "Numbering", "Number lines (display only non-empty)", "", "MenuView"
+	submenu "Edit", "Convert", "DOS (CR/LF) to Unix (LF)", "", "MenuView"
+	submenu "Edit", "Convert", "Unix (LF) to DOS (CR/LF)", "", "MenuView"
+	//submenu set "Edit", "Search", "Find Again", "Disable", "MenuView"
+	//after initial find, find again becomes available
+	// does not seem to work
+	
+	//////////ASCII & UNICODE MENUS/////////
+	CharInsertToMenu()
+	
+	///// SETTINGS MENU /////
+	submenu "Settings", "Word Wrap", "On", "", "MenuView"
+	submenu "Settings", "Word Wrap", "Off", "", "MenuView"
+	submenu "Settings", "Word Wrap", "Re-Wrap", "", "MenuView"
+	if WordWrap = 1 then
+		submenu set "Settings", "Word Wrap", "On", "disable", "MenuView"
+	elseif WordWrap = 0 then
+		submenu set "Settings", "Word Wrap", "Off", "disable", "MenuView"
+		submenu set "Settings", "Word Wrap", "Re-Wrap", "disable", "MenuView"
+	end if
+	submenu "Settings", "Backup", "On", "", "MenuView" 
+	submenu "Settings", "Backup", "Off", "", "MenuView" 
+	if Backup = 1 then
+		submenu set "Settings", "Backup", "On", "disable", "MenuView"
+	elseif Backup = 0 then
+		submenu set "Settings", "Backup", "Off", "disable", "MenuView"
+	end if
+	submenu "Settings", "Toolbar", "Graphics On", "", "MenuView" 
+	submenu "Settings", "Toolbar", "Graphics Off", "", "MenuView" 
+	if Toolbar = 1 then
+		submenu set "Settings", "Toolbar", "Graphics On", "disable", "MenuView"
+	elseif Toolbar = 0 then
+		submenu set "Settings", "Toolbar", "Graphics Off", "disable", "MenuView"
+	end if
+//	submenu "Settings", "Language", "Assist ON", "", "MenuView"
+//	submenu "Settings", "Language", "Assist OFF", "", "MenuView"
+//	submenu set "Settings", "Language", "Assist ON", "disable", "MenuView"
+//	submenu set "Settings", "Language", "Assist OFF", "disable", "MenuView"
+//	SetLanguage()
+	if AppName$ = "Rondel" RondelMoreMenus()
+	
+	//////HELP MENU//////
+	menu "Help", "Help", "H", "MenuView"
+	menu "Help", "HTML Help", "", "MenuView"
+	Menu "Help", "Characters ...", "", "MenuView"
+	submenu "Help", "Lorem Ipsum ...", "Cicero","", "MenuView"
+	submenu "Help", "Lorem Ipsum ...", "Boccaccio","", "MenuView"
+	submenu "Help", "Lorem Ipsum ...", "Goethe","", "MenuView"
+	submenu "Help", "Lorem Ipsum ...", "Beaudelaire","", "MenuView"
+	submenu "Help", "Lorem Ipsum ...", "Strindberg","", "MenuView"
+	submenu "Help", "Lorem Ipsum ...", "emacs","", "MenuView"
+	submenu "Help", "Lorem Ipsum ...", "Poe","", "MenuView"
+	submenu "Help", "Lorem Ipsum ...", "Strandberg","", "MenuView"
+	submenu "Help", "Lorem Ipsum ...", "Bible","", "MenuView"
+	submenu "Help", "Lorem Ipsum ...", "Thoreau","", "MenuView"
+	//Only offer to download noninstalled language packs
+//	for f = 0 to 2 	///change this value as more packs become available.
+//		CheckInstalledLangs("pack" + str$(f))
+//	next f	menu "Help", "About", "", "MenuView"
+
+	end sub
+
+sub MakeRecent()
+######Trope subroutine#####
+	local tempval$,counter, streamhandle
+	streamhandle = open(RecentFile$, "r")
+	for f = 1 to 10
+		line input #1 tempval$
+		if tempval$ <> "" then
+			counter = counter +1
+			RecentFile$(f) = tempval$
+			menu "Recent...", RecentFile$(f),"", "MenuView"
+		end if
+	next
+	close streamhandle
+	if counter = 0 Menu set "Recent...","Clear Recent Files", "disable", "MenuView"
+end sub
+
+sub MakeStatusbar()
+######Trope subroutine#####
+	/////STATUS BAR////////
+	layout "Bottom, Left", "MainWindow"
+	view 0, yheight-30 to xwidth, yheight, "StatusbarView", "MainWindow"
+	button 1,3 to 160,25, "StatusButton", "Status", "StatusbarView"
+	tooltip "StatusButton", "Click to refresh"
+	Textcontrol 162, 5 to 295, 25, "SearchField", "", "Enter search term", "StatusbarView"
+	tooltip "SearchField", "Enter the word or phrase to\nsearch for, then press ALT-F."
+	Textcontrol 300,5 to 433,25, "ReplacementField", "", "Enter replacement term", "StatusbarView"
+	tooltip "ReplacementField", "Enter the word or phrase to\nglobally replace the search\nterm, then press ALT-R."
+	dropbox 435,5 to 585,25, "SnippetDropBox", "", "StatusbarView"
+	tooltip "SnippetDropBox","select a snippet here and press\nthe button to the right to insert it." 
+	button 590, 5 to 612,25, "PasteSnippetButton", "✔", "StatusbarView"
+	tooltip "PasteSnippetButton", "Press this button to insert\nthe currently selected snippet."
+	
+end sub
+
+sub NewFile()
+######Trope subroutine#####
+	local whereistrope$,whereisRondel$,RunCommand$
+	if AppName$ = "Trope" then
+	//////////Locate Trope///////////
+		//Try the PM packaged local location first
+		whereistrope$=system$("if test -e /boot/home/config/apps/Trope/Trope; then echo yeah; else echo nope;fi")
+			if left$(whereistrope$,1)="y" RunCommand$= "/boot/home/config/apps/Trope/Trope"
+		//Try the PM packaged lsystem location
+		if RunCommand$= "" then 
+			whereistrope$=system$("if test -e /boot/system/apps/Trope/Trope; then echo yeah; else echo nope;fi")
+			if left$(whereistrope$,1)="y" RunCommand$= "/boot/system/apps/Trope/Trope"
+		endif
+		//Try the PM non-packaged location
+		if RunCommand$= "" then 
+			whereistrope$=system$("if test -e /boot/home/config/non-packaged/apps/Trope/Trope; then echo yeah; else echo nope;fi")
+			if left$(whereistrope$,1)="y" RunCommand$= "/boot/home/config//non-packaged/apps/Trope/Trope"
+		endif
+		//Try the Desktop
+		if RunCommand$= "" then
+			whereistrope$=system$("if test -e /boot/home/Desktop/Trope; then echo yeah; else echo nope;fi")
+			if left$(whereistrope$,1)="y" RunCommand$= "/boot/home/Desktop/Trope"
+		endif
+		//One last shot - for development only
+		if RunCommand$= "" then
+			whereistrope$=system$("if test -e /boot/home/git/Trope2/binder/Trope2.yab; then echo yeah; else echo nope;fi")
+			if left$(whereistrope$,1)="y" RunCommand$= "/boot/home/git/Trope2/binder/Trope2.yab"
+		endif
+		//Give up
+		if RunCommand$= "" then
+			alert "Trope executable not found in any standard location.", "OK" , "warning"
+			return
+		endif
+ 		SaveOffsetSettings()
+ 		system(RunCommand$ + " &")
+	elseif AppName$ = "Rondel" then
+		//////////Locate Rondel///////////
+		//Try the PM packaged local location first
+		whereisRondel$=system$("if test -e /boot/home/config/apps/Rondel/Rondel; then echo yeah; else echo nope;fi")
+			if left$(whereisRondel$,1)="y" RunCommand$= "/boot/home/config/apps/Rondel/Rondel"
+		//Try the PM packaged system location
+		if RunCommand$= "" then
+			whereisRondel$=system$("if test -e /boot/system/apps/Rondel/Rondel; then echo yeah; else echo nope;fi")
+			if left$(whereisRondel$,1)="y" RunCommand$= "/boot/system/apps/Rondel/Rondel"
+		endif
+		//Try the PM non-packaged location
+		if RunCommand$= "" then 
+			whereisRondel$=system$("if test -e /boot/home/config//non-packaged/apps/Rondel/Rondel; then echo yeah; else echo nope;fi")
+			if left$(whereisRondel$,1)="y" RunCommand$= "/boot/home/config//non-packaged/apps/Rondel/Rondel"
+		endif
+		//Try the Desktop
+		if RunCommand$= "" then
+			whereisRondel$=system$("if test -e /boot/home/Desktop/Rondel; then echo yeah; else echo nope;fi")
+			if left$(whereisRondel$,1)="y" RunCommand$= "/boot/home/Desktop/Rondel"
+		endif
+		//One last shot - for development only
+		if RunCommand$= "" then
+			whereisRondel$=system$("if test -e /boot/home/projects/Rondel/binder/Rondel.yab; then echo yeah; else echo nope;fi")
+			if left$(whereisRondel$,1)="y" RunCommand$= "/boot/home/projects/Rondel/binder/Rondel.yab"
+		endif
+		//Give up
+		if RunCommand$= "" then
+			alert "Rondel executable not found in any standard location.", "OK" , "warning"
+			return
+		endif
+ 		SaveOffsetSettings()
+ 		system(RunCommand$ + " &")
+	endif
+end sub
+
+sub OpenFile(FileToOpen$, fromwhere$)
+######Trope subroutine#####
+//should really be OpenWindow - called this for historic reasons
+	local tempval$,tempval,revertfile, streamhandle
+	if FileToOpen$ = "--ReVeRtFiLe--" revertfile=1
+	if FileToOpen$ = "" then
+		FileToOpen$= filepanel "Load-File", "Select text file to open", "/boot/home/"
+		if FileToOpen$ = "" then //User cancelled selection
+			return
+		end if
+	end if
+	//check if user asked for the last saved version of the current file
+	if  FileToOpen$ = "--ReVeRtFiLe--" then // Let's hope no user actually uses this for a filename!
+		if fromwhere$ = "language" then
+			FileToOpen$ = CurrentFile$
+		else
+			tempval = Alert "Revert to the last saved version of this file?", "Yes", "No", "", "warning"
+			if tempval = 2 then 
+				return
+			else
+				FileToOpen$ = CurrentFile$
+			end if
+		end if
+	end if
+	//check if file exists
+	if not(FileExists(FileToOpen$)) then
+		Alert "File Not found!\nIt may have been deleted.", "OK", "Stop"
+		return
+	end if
+	
+	// check if file is a text file
+	if TextFileCheck(FileToOpen$) = 1 return
+	
+	if AppName$ = "Rondel" then
+		if (HTMLFileCheck(FileToOpen$)) FileToOpen$= HTML2text$(FileToOpen$)
+	endif
+	
+	//if file is being reverted clear the text area and 
+	//set fileisopen to 0
+	if revertfile = 1 then
+		FileIsOpen = 0
+		textedit clear "EditBox"
+	endif
+	//return if there is a file already loaded
+	//Otherwise, fill in the text area
+	if FileIsOpen = 1 then
+		Alert "A file is already loaded in this window. Please open a new window first.", "OK", "info"
+		return
+	else
+		streamhandle = open(FileToOpen$, "r")
+		While (not eof(1))
+			line input #streamhandle tempval$
+			textedit add "EditBox", tempval$ + "\n"
+		wend
+		close streamhandle
+		FileIsOpen = 1
+		CurrentFile$ = FileToOpen$
+		ChangeTitleBar()	
+	end if
+	CheckTransfer() //enable transfer menu now that a file has been opened
+end sub
+
+sub OpenWindow()
+######Trope subroutine#####
+// Setup the main window here
+	local maxwidth
+	maxwidth = 1000:xorigin = 50: yorigin = 50: xwidth = 480: yheight = 500
+	//Read positions settings from settings file
+	GetSettings()
+	//check if user opened program on a workspace with a lower resolution
+	//or if a New window is getting too close to the screen edge
+	if xwidth > peek("DesktopWidth") xwidth = peek("DesktopWidth") - 50
+	if yheight > peek("DesktopHeight") yheight = peek("DesktopHeight") - 50
+	if xorigin > (peek("DesktopWidth")) - 100 xorigin = 50
+	if yorigin > (peek("DesktopHeight")) - 100 yorigin = 50
+	
+	/////////MAIN WINDOW///////////
+	window open xorigin,yorigin to xorigin + xwidth,yorigin + yheight, "MainWindow", AppName$ + ": Unsaved File "
+	window set "MainWindow", "MaximumTo", maxwidth,800
+	window set "MainWindow", "MinimumTo", xwidth,310
+	View Dropzone "MainWindow" //Make MainWindow droppable
+
+	MakeMenu()
+	
+	MakeButtonbar()
+		
+	MakeStatusbar()
+		
+	MakeEditBox()
+end sub
+
+sub ParsePath2Filename$(Path2Parse$)
+######Trope subroutine#####
+	local result$,arrsize, a$(1)
+	if Path2Parse$ = "" return ""
+	arrsize = token(Path2Parse$,a$(), "/")
+	result$ = a$(arrsize) 
+	return result$
+end sub
+
+sub RefreshRecent()
+######Trope subroutine#####
+	local streamhandle
+	streamhandle = open(RecentFile$, "w")
+	print #streamhandle CurrentFile$
+	for f= 1 to 9
+		if RecentFile$(f) <> CurrentFile$ then
+			print #streamhandle RecentFile$ (f)
+		end if
+	next f
+	close streamhandle
+end sub
+
+sub RefreshStatusbar()
+######Trope subroutine#####
+	local TotalWords, TotalChars, TotalPages, tempval$, w$(1), tempval2$
+		TotalChars = textedit get "EditBox", "textlength"
+		if TotalChars >0 FileIsOpen = 1
+		tempval2$ = textedit get$ "EditBox"
+		TotalWords = token(tempval2$, w$(), " \t\n")
+		tempval$ = " words/"
+		if TotalWords = 1 tempval$ = " word/"
+		tempval$ = "± " +  str$(TotalWords) + tempval$
+		TotalPages = int (TotalWords/300) + 1
+		if TotalPages = 1 then
+			tempval$ = tempval$ + str$(TotalPages) + " p."
+		else
+			tempval$ =  tempval$ + str$(TotalPages) + " pp."
+		end if
+		option set "StatusButton", "Label", tempval$
+end sub
+
+sub RegenerateRecent()
+######Trope subroutine#####
+	if (left$(system$("catattr -d BEOS:TYPE '" + CurrentFile$ + "'"), 5)) <> "text/" return //prevents junk in recent files
+	DeleteRecent()
+	RefreshRecent()
+	MakeRecent()
+	Menu set "Recent...","Clear Recent Files", "Enable", "MenuView"
+end sub
+
+sub ReplaceChar(newchar$)
+######Trope subroutine#####
+	local currentsel$, w$(10), charnum
+	charnum = token(newchar$, w$(), ":") 
+	currentsel$= textedit get$ "EditBox", "Selection"
+	newchar$ = w$(charnum)
+	if currentsel$ <> "" textedit set "EditBox", "clear"
+	textedit add "EditBox",newchar$
+	clipboard copy newchar$
+end sub
+
+sub SaveAs()
+######Trope subroutine#####
+	local FileToSave$
+	FileToSave$= filepanel "Save-File", "Select directory and supply a new filename", "/boot/home/"
+	if FileToSave$ = "" then //user canceled
+		return
+	else
+		CurrentFile$ = FileToSave$
+		SaveFile(CurrentFile$)
+		ChangeTitleBar()
+	end if
+end sub
+
+sub SaveFile(SaveFile$)
+######Trope subroutine#####
+	local streamhandle
+	streamhandle = Open(SaveFile$, "w")
+	print #streamhandle textedit get$ "EditBox"
+	close streamhandle
+	system("mimeset -F '" + SaveFile$ + "'")
+	Menu set "File", "Revert", "enable", "MenuView"
+	ChangeTitleBar()
+end sub
+
+sub SaveFileFirst(fromwhere$)
+######Trope subroutine#####
+	local SaveFirst
+	if FileIsOpen <> 0 then
+		if fromwhere$ = "language" then
+			if CurrentFile$ = "" then
+				alert "You need to save your file first.", "OK", "warning"
+				SaveAs()
+			else
+				SaveFile(CurrentFile$)
+			end if
+			return
+		elseif fromwhere$ = "" then
+			SaveFirst= Alert "A file is currently open.\nSave it before proceeding?", "Yes", "No", "", "warning"
+			if SaveFirst = 1 then
+				if CurrentFile$ = "" then
+					SaveAs()
+				else
+					SaveFile(CurrentFile$)
+				end if	
+			end if
+		end if
+	end if	
+end sub
+
+sub SaveOffsetSettings()
+######Trope subroutine#####
+	local streamhandle
+	xorigin = (window get "MainWindow", "position-x") + 20
+	yorigin = (window get "MainWindow", "position-y") + 45
+	streamhandle = open(SettingsFile$, "w")
+	print #streamhandle str$(xorigin)
+	print #streamhandle str$(yorigin)
+	print #streamhandle window get "MainWindow", "width"
+	print #streamhandle window get "MainWindow", "height"
+	print #streamhandle str$(WordWrap)
+	print #streamhandle str$(Backup)
+	print #streamhandle str$(Toolbar)
+	close streamhandle
+end sub
+
+sub SaveSettings()
+######Trope subroutine#####
+	local streamhandle
+	streamhandle = open(SettingsFile$, "w")
+	print #streamhandle window get "MainWindow", "position-x"
+	print #streamhandle window get "MainWindow", "position-y"
+	print #streamhandle window get "MainWindow", "width"
+	print #streamhandle window get "MainWindow", "height"
+	print #streamhandle str$(WordWrap)
+	print #streamhandle str$(Backup)
+	print #streamhandle str$(Toolbar)
+	close streamhandle
+end sub
+
+sub SetLanguage()
+######Trope subroutine#####
+	local tempfile$, entry$, streamhandle
+	tempfile$ = TempDir$() + "/trope_langs"
+	system("ls /boot/system/data/SpellAssistDicts/languages>" + tempfile$)
+	streamhandle = Open(tempfile$, "r")
+	while(not eof(1))
+		line input #1 entry$
+		submenu "Settings", "Language", entry$, "", "MenuView"
+	wend
+	close streamhandle
+	system("rm " + tempfile$)
+end sub
+
+sub ShowHelp()
+######Trope subroutine#####
+local CenterX, CenterY, help$
+	CenterX = INT((Window Get "MainWindow", "Width")/2) + (Window Get "MainWindow","Position-X")
+	CenterY = INT((Window Get "MainWindow", "Height")/2) + (Window Get "MainWindow","Position-Y")
+	Window Open CenterX, CenterY to CenterX + 400, CenterY + 400, "HelpBox", "Trope Help"
+	Window Set "HelpBox", "Feel", "Floating-App"
+	Window Set "HelpBox", "Flags", "Not-Resizable"
+	textedit 1,1 to 400,400, "HelpTextEdit",1 , "HelpBox"
+	Textedit set "HelpTextEdit", "editable", 0
+	restore Helpdata
+	do 
+		read help$
+		if left$(help$,1) = "<" read help$
+		if (help$ = "end_of_help_data") break
+		TextEdit Add "HelpTextEdit", help$ + "\n"
+	loop
+end sub
+
+sub ShowHTMLHelp()
+######Trope subroutine#####
+local help$, helpfile$, dothis$, streamhandle
+	helpfile$ = TempDir$() + "/Trope.html"
+	streamhandle = open(helpfile$, "w")
+	restore Helpdata
+	do 
+		read help$
+		if (help$ = "end_of_help_data") break
+		if left$(help$,2) = "<h" or left$(help$,3) = "</h" then
+			print #streamhandle, help$ 
+		elseif help$ = "<b>" or help$ = "</b>" then
+			print #streamhandle, help$ 
+		elseif help$ =" " then
+			print #streamhandle, "<br>"
+		else
+			print #streamhandle, help$ + "<br>"
+		end if
+	loop
+	close streamhandle
+	launch helpfile$
+end sub
+
+sub TextFileCheck(FileToOpen$)
+######Trope subroutine#####
+	//check if requested file is some kind of text file - Trying to load binaries WILL crash trope!
+	local tempval
+	system("mimeset -F '" + FileToOpen$ + "'")
+	if (left$(system$("catattr -d BEOS:TYPE '" + FileToOpen$ + "'"), 5)) <> "text/" then
+		tempval = alert FileToOpen$ + "\n does not look like a text file!\nDo you want to insert the filename as text instead?", "Yes", "No","", "warning"
+		if tempval = 1 then 
+			textedit add "EditBox", FileToOpen$
+		end if
+		return 1	
+	end if
+	return 0
+end sub
+
+sub TropeEditLoop(Command$)
+######Trope subroutine#####
+	local response
+	switch Command$
+		case "MenuView:Edit:Undo/Redo":
+		case "UndoButton"
+			Textedit set "EditBox", "undo"
+			break
+		case "MenuView:Edit:Copy":
+		case "CopyButton":
+			Textedit set "EditBox", "copy"
+			break
+		case "MenuView:Edit:Cut":
+		case "CutButton":
+			Textedit set "EditBox", "cut"
+			break
+		case "MenuView:Edit:Paste":
+		case "PasteButton":
+			Textedit set "EditBox", "paste"
+			break
+		case "MenuView:Edit:Sort:A → Z":
+			SortSelection(" -b -f ")
+			break
+		case "MenuView:Edit:Sort:Z → A":
+			SortSelection(" -b -f -r ")
+			break
+		case "MenuView:Edit:Sort:0 → 9":
+			SortSelection(" -b -n ")
+			break
+		case "MenuView:Edit:Sort:9 → 0":
+			SortSelection(" -b -n -r ")
+			break
+		case "MenuView:Edit:Case:Upper case → AB CD EFGH":
+			ChangeCase("upper")
+			break
+		case "MenuView:Edit:Case:Lower case → ab cd efgh":
+			ChangeCase("lower")
+			break
+		case "MenuView:Edit:Case:Initial Caps case → Ab Cd Efgh":
+			ChangeCase("initial")
+			break
+		case "MenuView:Edit:Case:Title case → Ab cd Efgh":
+			ChangeCase("title")
+			break
+		case "MenuView:Edit:Case:Sentence case → Ab cd efgh":
+			ChangeCase("sentence")
+			break
+		case "MenuView:Edit:Copy to Snippet":
+			Copy2Snippet()
+			break
+		case "MenuView:Edit:Select:Clear Selection":
+			Textedit set "EditBox", "clear"
+			break
+		case "MenuView:Edit:Select:Clear All":
+			Textedit set "EditBox", "select-all"
+			Textedit set "EditBox", "clear"
+			break
+		case "MenuView:Edit:Search:Find":
+		case "FindButton"
+			tempval$ = trim$(Textcontrol Get$ "SearchField")
+			Textcontrol set "SearchField", ""
+			if tempval$ <> "" then
+				SearchText$ = tempval$
+				Findstring(SearchText$)
+				//submenu set "Edit", "Search", "Find Again", "Enable", "MenuView" 
+				//after initial find, find again becomes available
+				// does not seem to work
+			end if
+			break
+		case "MenuView:Edit:Search:Find Again":
+		case "FindAgainButton"
+			if SearchText$ <>"" then
+				Findstring(SearchText$)
+			end if
+			break
+		case "MenuView:Edit:Search:Replace All":
+			ReplaceAll()
+			break
+		case "MenuView:Edit:Select:Select All":
+			Textedit set "EditBox", "select-all"
+			break
+		case "MenuView:Edit:Spelling:Check Spelling"
+			SaveFileFirst("language")
+			if SelectLanguageFirst() = 1 CheckSpelling()
+			break
+		case "MenuView:Edit:Spelling:Edit Personal Dictionary"
+			if SelectLanguageFirst() = 1 EditPersonalDict()
+			break
+		case "MenuView:Edit:Spelling:Translate"
+			launch "http://translate.google.com"
+			break
+		case "MenuView:Edit:Spelling:Check for Plagiarism"
+			launch "http://paperrater.com"
+			break
+		case "MenuView:Edit:Spelling:Thesaurus"
+			launch "http://thesaurus.com"
+			break
+		case "MenuView:Edit:Spelling:Acronyms"
+			launch "http://www.acronymfinder.com/.com"
+			break
+		case "MenuView:Edit:Spelling:Other Tools"
+			launch "http://www.refseek.com/directory/dictionaries.html"
+			break
+		case "MenuView:Edit:Spacing:Doublespace"
+			Tools("doublespace")
+			break
+		case "MenuView:Edit:Spacing:Triplespace"
+			Tools("triplespace")
+			break
+		case "MenuView:Edit:Spacing:Delete blank lines"
+			Tools("deleteblanklines")
+			break
+		case "MenuView:Edit:Whitespace:Indent paragraphs"
+			if AppName$ = "Rondel" response = alert "Adding spaces at the beginning of a line may indicate a code block in a Markdown document. Proceed anyway?", "Yes", "No", "", "warning"
+			if response < 2 Tools("indentlines")
+			break
+		case "MenuView:Edit:Whitespace:Delete leading blanks"
+			if AppName$ = "Rondel" response = alert "Removing spaces at the beginning of a line may remove a code block in a Markdown document. Proceed anyway?", "Yes", "No", "", "warning"
+			if response < 2 Tools("deleteleadingblanks")
+			break
+		case "MenuView:Edit:Whitespace:Delete trailing blanks"
+			Tools("deletetrailingblanks")
+			break
+		case "MenuView:Edit:Whitespace:Delete both leading and trailing"
+			if AppName$ = "Rondel" response = alert "Removing spaces at the beginning of a line may remove a code block in a Markdown document. Proceed anyway?", "Yes", "No", "", "warning"
+			if response < 2 Tools("deletebothblanks")
+			break
+		case "MenuView:Edit:Whitespace:Change double spaces to single"
+			Tools("double2single")
+			break
+		case "MenuView:Edit:Whitespace:Remove consecutive duplicate lines"
+			Tools("removeconsecutivedupes")
+			break
+		case "MenuView:Edit:Whitespace:Remove all duplicate lines"
+			Tools("removealldupes")
+			break
+		case "MenuView:Edit:Whitespace:Reverse line order"
+			Tools("reverselineorder")
+			break
+		case "MenuView:Edit:Whitespace:Reverse character order"
+			Tools("reversecharorder")
+			break
+		case "MenuView:Edit:Numbering:Number all lines"
+			Tools("numberleft")
+			break
+		case "MenuView:Edit:Numbering:Number lines (display only non-empty)"
+			Tools("numbernoempty")
+			break
+		case "MenuView:Edit:Convert:Unix (LF) to DOS (CR/LF)"
+			Tools("unix2dos")
+			break
+		case "MenuView:Edit:Convert:DOS (CR/LF) to Unix (LF)"
+			Tools("dos2unix")
+			break
+		default
+			break
+	end switch
+end sub
+
+sub TropeFileLoop(Command$)
+######Trope subroutine#####
+	switch Command$
+			case "MenuView:File:New":
+			case "NewButton":
+			NewFile()
+			break
+		case "MenuView:File:Open":
+		case "OpenButton"
+			OpenFile()
+			RegenerateRecent()
+			break
+		case "MenuView:File:Save":
+		case "SaveButton"
+			if CurrentFile$ = "" then
+				SaveAs()
+				RegenerateRecent()
+			else
+				SaveFile(CurrentFile$)
+			end if
+			FileIsOpen=1
+			CheckTransfer()
+			if Backup <> 0 Backup()
+			break
+		case "MenuView:File:Save As":
+			SaveAs()
+			if Backup <> 0 Backup()
+			RegenerateRecent()
+			break
+		case "MenuView:File:Insert"
+			InsertFile()
+			break
+		case "MenuView:File:Revert":
+			OpenFile("--ReVeRtFiLe--")
+			break
+		case "MenuView:File:Printer setup"
+			printer setup PrintSetupFile$
+			Menu set "File",  "Print", "enable", "MenuView"
+			break
+		case "MenuView:File:Print"
+			PrintError=Printer CurrentFile$, PrintSetupFile$, "EditBox"
+			if PrintError Alert "An error occured. What can I say? Printing on Haiku is full of bugs.", "Ok", "info"
+			break		
+		case "MenuView:File:Transfer...:to Pe":
+			SaveFile(CurrentFile$)
+			if FileExists("/boot/system/apps/Pe/Pe") system("/boot/system/apps/Pe/Pe '" + CurrentFile$ + "' &")
+			CloseWindow(1)
+			end
+			break
+		case "MenuView:File:Transfer...:to StyledEdit":
+			SaveFile(CurrentFile$)
+			if FileExists("/boot/system/apps/StyledEdit") system("/boot/system/apps/StyledEdit '" + CurrentFile$ + "' &")
+			CloseWindow(1)
+			end
+			break
+		case "MenuView:File:Transfer...:to Rondel":
+			SaveFile(CurrentFile$)
+			if FileExists("/boot/system/apps/Rondel/Rondel")system("/boot/system/apps/Rondel/Rondel '" + CurrentFile$ + "' &")
+			CloseWindow(1)
+			end
+			break
+		case "MenuView:File:Transfer...:to Trope":
+			SaveFile(CurrentFile$)
+			if FileExists("/boot/system/apps/Trope/Trope") system("/boot/system/apps/Trope/Trope '" + CurrentFile$ + "' &")
+			CloseWindow(1)
+			end
+			break
+		case "MenuView:File:Info"
+			DocInfo()
+			break
+		default
+			break
+	end switch
+end sub
+
+sub TropeHelpLoop(Command$)
+######Trope subroutine#####
+	switch Command$
+		case "HelpBox:_QuitRequested":
+			window close "HelpBox"
+			break
+		case "MenuView:Help:Help":
+		case "HelpButton"
+			ShowHelp()
+			break
+		case "MenuView:Help:HTML Help":
+			ShowHTMLHelp()
+			break
+		case "MenuView:Help:Characters ..."
+			Charsheet()
+			break
+		case "MenuView:Help:Install...:Language Pack 1":
+			InstallLanguagePack("pack1")
+			break
+		case "MenuView:Help:Install...:Language Pack 2":
+			InstallLanguagePack("pack2")
+			break
+		case "MenuView:Help:Install...:Language Pack 3":
+			InstallLanguagePack("pack3")
+			break
+		case "MenuView:Help:About":
+			Alert AppName$ + " " + AppVersion$ + "\nby Michel Clasquin-Johnson\nPublic Domain Software, 2014\n\nWith thanks to Lelldorin for his help on the Find function, and to Rene Gollent, bbjimmy and Humdinger for help with identifying file types.\n\nThis product includes freeware toolbar icons from\nhttp://hongkiat.com/blog/toolbar-icon-set/","OK","info"
+			break
+		default
+			break
+	end switch
+end sub
+
+sub TropeSettingsLoop(Command$)
+######Trope subroutine#####
+	switch Command$
+		case "MenuView:Settings:Word Wrap:On":
+			submenu set "Settings", "Word Wrap", "On", "disable", "MenuView"
+			submenu set "Settings", "Word Wrap", "Off", "enable", "MenuView"
+			submenu set "Settings", "Word Wrap", "Re-Wrap", "enable", "MenuView"
+			WordWrap = 1
+			textedit set "EditBox", "wordwrap", WordWrap
+			SaveSettings()
+			break
+		case "MenuView:Settings:Word Wrap:Off":
+			submenu set "Settings", "Word Wrap", "Off", "disable", "MenuView"
+			submenu set "Settings", "Word Wrap", "On", "enable", "MenuView"
+			submenu set "Settings", "Word Wrap", "Re-Wrap", "disable", "MenuView"
+			WordWrap = 0
+			textedit set "EditBox", "wordwrap", WordWrap
+			SaveSettings()
+			break
+		case "MenuView:Settings:Word Wrap:Re-Wrap":
+			textedit set "EditBox", "wordwrap", 0
+			wait 0.2
+			submenu set "Settings", "Word Wrap", "On", "disable", "MenuView"
+			submenu set "Settings", "Word Wrap", "Off", "enable", "MenuView"
+			submenu set "Settings", "Word Wrap", "Re-Wrap", "enable", "MenuView"
+			WordWrap = 1
+			textedit set "EditBox", "wordwrap", WordWrap
+			break
+		case "MenuView:Settings:Backup:On":
+			submenu set "Settings", "Backup", "On", "disable", "MenuView"
+			submenu set "Settings", "Backup", "Off", "enable", "MenuView"
+			Backup = 1
+			SaveSettings()
+			break
+		case "MenuView:Settings:Backup:Off":
+			submenu set "Settings", "Backup", "Off", "disable", "MenuView"
+			submenu set "Settings", "Backup", "On", "enable", "MenuView"
+			Backup = 0
+			SaveSettings()
+			break
+		case "MenuView:Settings:Toolbar:Graphics On":
+			TropeToolbarOverlay()
+			submenu set "Settings", "Toolbar", "Graphics On", "disable", "MenuView"
+			submenu set "Settings", "Toolbar", "Graphics Off", "enable", "MenuView"
+			Toolbar = 1
+			SaveSettings()
+			break
+		case "MenuView:Settings:Toolbar:Graphics Off":
+			if view get "ToolbarOverlay", "exists" = 1 view remove "ToolbarOverlay"
+			submenu set "Settings", "Toolbar", "Graphics Off", "disable", "MenuView"
+			submenu set "Settings", "Toolbar", "Graphics On", "enable", "MenuView"
+			Toolbar = 0
+			SaveSettings()
+			break
+		case "MenuView:Settings:Language:Assist ON":
+			submenu set "Settings", "Language", "Assist ON", "disable", "MenuView"
+			submenu set "Settings", "Language", "Assist OFF", "enable", "MenuView"
+			textedit set "EditBox", "has-autocompletion", 1
+			textedit set "EditBox", "autocomplete-start", 3
+			autocomplete=1
+			ChangeTitleBar()
+			break
+		case "MenuView:Settings:Language:Assist OFF":
+			submenu set "Settings", "Language", "Assist OFF", "disable", "MenuView"
+			submenu set "Settings", "Language", "Assist ON", "enable", "MenuView"
+			textedit set "EditBox", "has-autocompletion", 0
+			autocomplete=0
+			ChangeTitleBar()
+			break
+		default
+			break
+	end switch
+end sub
+
+sub TropeToolbarOverlay()
+######Trope subroutine#####
+	local red, green, blue
+	layout "top, Left", "MainWindow"
+	view 0,20 to 440,50, "ToolbarOverlay", "MainWindow"
+	draw set "Highcolor", 216,216, 216, "ToolbarOverlay"
+	draw rect 1,1 to 439, 48, "ToolbarOverlay"
+	restore Toolbardata
+	for f = 0 to 29
+		for n = 0 to 439
+			read red: read green: read blue
+			if not(red = 216 and green = 216 and blue = 216) then 
+				DRAW SET "HighColor", red, green, blue, "ToolbarOverlay"
+				DRAW DOT n,f, "ToolbarOverlay"
+			end if
+		next n
+	next f
+end sub
+
 /////////////DATA///////////////
 Label 1
 data "½", "¼", "¾", "°", "¹", "²", "³","end_of_data"
@@ -2852,7 +4132,7 @@ data 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216, 216
 Label Helpdata
 
 data "<html><head><title>Trope Help</title></head><body><h1>"
-data "          TROPE v0.9"
+data "          TROPE v0.6"
 data "================="
 data "</h1>"
 data " "
@@ -2939,7 +4219,7 @@ data " "
 data "REPLACE"
 data "A fairly primitive GLOBAL, case-dependent search-and-replace using the text in the Find and Replace input boxes at the bottom of the window. You can also just type your text in there and press ALT-R"
 data " "
-data "Note: I have no plans to implement a proper Replace function in Trope.  Frankly, I don't see the point of competing with the superb replace function in Pe. But it's public domain code: feel free to give it a go"
+data "Note: I have no plans to implement a proper Replace function in Trope.  Frankly, I don't see the point of competing with the superb replace function in Pe. But it's public domain code: feel free to give it a go."
 data " "
 data "SELECT ALL"
 data "Select all text."
@@ -3019,7 +4299,7 @@ data "CHARACTERS ..."
 data "Pastes all currently available High-Ascii and UniCode characters into the current document."
 data " "
 data "LOREM IPSUM"
-data "insert a specified number of filler text into your document. A variety of options are offered over and above the usual Latin one."
+data "insert a specified number of filler text into your document. A variety of options are offered over and above the usual fake Latin one."
 data " "
 data "INSTALL"
 data "This only appears when the system detects that there are uninstalled dictionary packs. If you want more information on what is in each pack, rather use HaikuDepot."

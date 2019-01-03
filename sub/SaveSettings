@@ -1,0 +1,14 @@
+sub SaveSettings()
+######Trope subroutine#####
+	local streamhandle
+	streamhandle = open(SettingsFile$, "w")
+	print #streamhandle window get "MainWindow", "position-x"
+	print #streamhandle window get "MainWindow", "position-y"
+	print #streamhandle window get "MainWindow", "width"
+	print #streamhandle window get "MainWindow", "height"
+	print #streamhandle str$(WordWrap)
+	print #streamhandle str$(Backup)
+	print #streamhandle str$(Toolbar)
+	close streamhandle
+end sub
+

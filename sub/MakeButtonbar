@@ -1,0 +1,28 @@
+sub MakeButtonbar()
+######Trope subroutine#####
+	layout "Bottom, Left", "MainWindow"
+	Button 4,23 to 42,48, "NewButton", "⛋New", "MenuView"
+	Tooltip "NewButton","Open a new window"
+	Button 44,23 to 82,48, "OpenButton", "Opn☐", "MenuView"
+	Tooltip "OpenButton", "Open a  file"
+	Button 84,23 to 122,48, "SaveButton", "Sav☑", "MenuView"
+	Tooltip "SaveButton", "Save this file"
+	Button 124,23 to 162,48, "UndoButton", "U/R", "MenuView"
+	Tooltip "UndoButton", "Undo/Redo the last change"
+	Button 164,23 to 202,48, "CutButton", "✄⚳Cut", "MenuView"
+	Tooltip "CutButton", "Cut selection to clipboard"
+	Button 204,23 to 242,48, "CopyButton", "⚢Cpy", "MenuView"
+	Tooltip "CopyButton", "Copy selection to clipboard"
+	Button 244,23 to 282,48, "PasteButton", "⚥Pst", "MenuView"
+	Tooltip "PasteButton", "Paste from clipboard"
+	Button 284,23 to 322,48, "FindButton", "⚲Find", "MenuView"
+	Tooltip "FindButton", "Find text entered in the searchbox"
+	Button 324,23 to 362,48, "FindAgainButton", "FnA⚲⚲", "MenuView"
+	Tooltip "FindAgainButton", "Repeat the last search"
+	Button 364,23 to 402,48, "QuitButton", "⛔Quit", "MenuView"
+	Tooltip "QuitButton", "Close this window"
+	Button 404,23 to 442,48, "HelpButton", "Help", "MenuView"
+	Tooltip "HelpButton", "View help"
+	if Toolbar = 1 TropeToolbarOverlay()
+end sub
+

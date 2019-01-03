@@ -1,0 +1,75 @@
+sub TropeFileLoop(Command$)
+######Trope subroutine#####
+	switch Command$
+			case "MenuView:File:New":
+			case "NewButton":
+			NewFile()
+			break
+		case "MenuView:File:Open":
+		case "OpenButton"
+			OpenFile()
+			RegenerateRecent()
+			break
+		case "MenuView:File:Save":
+		case "SaveButton"
+			if CurrentFile$ = "" then
+				SaveAs()
+				RegenerateRecent()
+			else
+				SaveFile(CurrentFile$)
+			end if
+			FileIsOpen=1
+			CheckTransfer()
+			if Backup <> 0 Backup()
+			break
+		case "MenuView:File:Save As":
+			SaveAs()
+			if Backup <> 0 Backup()
+			RegenerateRecent()
+			break
+		case "MenuView:File:Insert"
+			InsertFile()
+			break
+		case "MenuView:File:Revert":
+			OpenFile("--ReVeRtFiLe--")
+			break
+		case "MenuView:File:Printer setup"
+			printer setup PrintSetupFile$
+			Menu set "File",  "Print", "enable", "MenuView"
+			break
+		case "MenuView:File:Print"
+			PrintError=Printer CurrentFile$, PrintSetupFile$, "EditBox"
+			if PrintError Alert "An error occured. What can I say? Printing on Haiku is full of bugs.", "Ok", "info"
+			break		
+		case "MenuView:File:Transfer...:to Pe":
+			SaveFile(CurrentFile$)
+			if FileExists("/boot/system/apps/Pe/Pe") system("/boot/system/apps/Pe/Pe '" + CurrentFile$ + "' &")
+			CloseWindow(1)
+			end
+			break
+		case "MenuView:File:Transfer...:to StyledEdit":
+			SaveFile(CurrentFile$)
+			if FileExists("/boot/system/apps/StyledEdit") system("/boot/system/apps/StyledEdit '" + CurrentFile$ + "' &")
+			CloseWindow(1)
+			end
+			break
+		case "MenuView:File:Transfer...:to Rondel":
+			SaveFile(CurrentFile$)
+			if FileExists("/boot/system/apps/Rondel/Rondel")system("/boot/system/apps/Rondel/Rondel '" + CurrentFile$ + "' &")
+			CloseWindow(1)
+			end
+			break
+		case "MenuView:File:Transfer...:to Trope":
+			SaveFile(CurrentFile$)
+			if FileExists("/boot/system/apps/Trope/Trope") system("/boot/system/apps/Trope/Trope '" + CurrentFile$ + "' &")
+			CloseWindow(1)
+			end
+			break
+		case "MenuView:File:Info"
+			DocInfo()
+			break
+		default
+			break
+	end switch
+end sub
+
