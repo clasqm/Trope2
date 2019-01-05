@@ -35,9 +35,9 @@ tempval = 0
 Snippet$ = ""
 dim RecentFile$(10)
 dim msg$(1)
-Language$ = ""
 autocomplete=0
 PrintError=0
+Language$ = ""
 
 //But these are for real
 AppName$ = "Trope" 
@@ -46,6 +46,7 @@ SettingsDir$ = "/boot/home/config/settings/Trope/"
 SettingsFile$ = SettingsDir$ +"Trope.settings"
 RecentFile$ = SettingsDir$ +"Trope.recent"
 PrintSetupFile$= SettingsDir$ +"printsetup"
+
 OpenWindow()
   
 //open file specified on the command line or passed along by the OS

@@ -1,0 +1,23 @@
+sub SortSelection(switch$)
+######Trope subroutine#####
+	local TextToSort$ , tempfile1$,tempfile2$, dothis$, streamhandle
+	TextToSort$ = textedit get$ "EditBox","Selection"
+	if TextToSort$ = "" then
+		Alert "Please select the lines of text to sort.", "OK", "none"
+		return
+	elsif instr(TextToSort$, "\n") = 0
+		Alert "Please select TWO or more lines of text to sort.", "OK", "none"
+		return
+	else
+		tempfile1$ = TempDir$() + "/tosort"
+		streamhandle = open(tempfile1$, "w")
+			print #streamhandle TextToSort$
+		close streamhandle
+		dothis$ = "grep '.' " + tempfile1$+ " | sort " +switch$
+		tempfile2$ = StripLFoffSysCmd$(system$(dothis$))
+		Textedit set "EditBox", "clear"
+		textedit add "EditBox", tempfile2$
+		system("rm -f " + tempfile1$)
+	endif
+end sub
+

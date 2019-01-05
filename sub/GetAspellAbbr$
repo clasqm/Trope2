@@ -1,0 +1,22 @@
+sub GetAspellAbbr$()
+######Trope subroutine#####
+	local abbr$
+	switch Language$
+		case "English (GB)"
+			abbr$ ="en_GB"
+			break
+		case "English (US)"
+			abbr$ ="en_US"
+			break
+		case "English (AU)"
+			abbr$ ="en_AU"
+			break
+		case "English (CA)"
+			abbr$ ="en_CA"
+			break
+		default
+			break
+	end switch
+	return abbr$
+end sub
+

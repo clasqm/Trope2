@@ -98,6 +98,12 @@ while(not leavingLoop)
 			InsertLoremIpsum(msg$(everyCommand))
 		endif
 		
+		//Check if user selected a language
+		if left$(msg$(everyCommand),27)  = "MenuView:Settings:Language:" then
+			Language$ = right$(msg$(everyCommand), len(msg$(everyCommand))-27)
+			ChangeTitleBar()
+		endif
+		
 		RefreshStatusbar()
 
 	next everyCommand

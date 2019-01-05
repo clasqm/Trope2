@@ -3,6 +3,11 @@ sub CheckTransfer()
 	if FileIsOpen = 1 then
 		Submenu set "File", "Transfer...", "to Pe", "enable", "MenuView"
 		Submenu set "File", "Transfer...", "to StyledEdit", "enable", "MenuView"
+		if FileExists("/boot/system/apps/Kate/Kate") Submenu set "File", "Transfer...", "to Kate", "enable", "MenuView"
+		if FileExists("/boot/system/apps/Calligra/Words") Submenu set "File", "Transfer...", "to Calligra", "enable", "MenuView"
+		if FileExists("/boot/system/apps/LibreOffice/program/LibreOffice") Submenu set "File", "Transfer...", "to LibreOffice", "enable", "MenuView"
+		if FileExists("/boot/system/apps/Notepadqq/lib/notepadqq/Notepadqq") Submenu set "File", "Transfer...", "to Notepadqq", "enable", "MenuView"
+		if FileExists("/boot/system/apps/Koder") Submenu set "File", "Transfer...", "to Koder", "enable", "MenuView"
 		if FileExists("boot/system/apps/Rondel/Rondel") and Appname$ <> "Trope" Submenu set "File", "Transfer...", "to Rondel", "enable", "MenuView"
 		if FileExists("/boot/system/apps/Trope/Trope") and Appname$ <> "Rondel" Submenu set "File", "Transfer...", "to Trope", "enable", "MenuView"
 	end if

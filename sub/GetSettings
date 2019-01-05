@@ -14,6 +14,7 @@ sub GetSettings()
 			line input #1 tempval$: WordWrap = val(tempval$)
 			line input #1 tempval$: Backup = val(tempval$)
 			line input #1 tempval$: Toolbar = val(tempval$)
+			line input #1Language$
 		end if
 	close streamhandle
 end sub

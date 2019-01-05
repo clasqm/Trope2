@@ -3,12 +3,12 @@ sub ChangeTitleBar()
 //change tab content
 	local tablang$		
 	if Language$ <> "" then
-		tablang$ = " (" + Language$
-		if autocomplete =0 then
-			tablang$ = tablang$ + " - assist OFF)"
-		elseif autocomplete = 1 then
-			tablang$ = tablang$ +" - assist ON)" 
-		endif
+		tablang$ = " (" + Language$ + ")"
+//		if autocomplete =0 then
+//			tablang$ = tablang$ + " - assist OFF)"
+//		elseif autocomplete = 1 then
+//			tablang$ = tablang$ +" - assist ON)" 
+//		endif
 	else
 		tablang$ = " (No Language Selected)"
 	endif 

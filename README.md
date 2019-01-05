@@ -8,4 +8,6 @@ Trope2 is the development name for a ground-up rewrite. Once released, it will i
 Written in yab using the Yabadabbadoo IDE
 MIT-Licensed software
 
+Binaries: https://sourceforge.net/p/tropeforhaiku/
+
 ![Trope](./trope.png)

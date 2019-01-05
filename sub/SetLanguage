@@ -1,14 +1,24 @@
 sub SetLanguage()
 ######Trope subroutine#####
-	local tempfile$, entry$, streamhandle
-	tempfile$ = TempDir$() + "/trope_langs"
-	system("ls /boot/system/data/SpellAssistDicts/languages>" + tempfile$)
-	streamhandle = Open(tempfile$, "r")
-	while(not eof(1))
-		line input #1 entry$
-		submenu "Settings", "Language", entry$, "", "MenuView"
-	wend
-	close streamhandle
-	system("rm " + tempfile$)
+	local installedlang$
+	installedlang$ = system$("ls /boot/system/packages/aspell_*")
+	if instr(installedlang$, "aspell_en") then
+		submenu "Settings", "Language", "English (AU)", "", "MenuView"
+		submenu "Settings", "Language", "English (CA)", "", "MenuView"
+		submenu "Settings", "Language", "English (GB)", "", "MenuView"
+		submenu "Settings", "Language", "English (US)", "", "MenuView"
+	endif
+	
+
+//	local tempfile$, entry$, streamhandle
+//	tempfile$ = TempDir$() + "/trope_langs"
+//	system("ls /boot/system/data/SpellAssistDicts/languages>" + tempfile$)
+//	streamhandle = Open(tempfile$, "r")
+//	while(not eof(1))
+//		line input #1 entry$
+//		submenu "Settings", "Language", entry$, "", "MenuView"
+//	wend
+//	close streamhandle
+//	system("rm " + tempfile$)
 end sub
 

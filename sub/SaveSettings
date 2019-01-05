@@ -9,6 +9,7 @@ sub SaveSettings()
 	print #streamhandle str$(WordWrap)
 	print #streamhandle str$(Backup)
 	print #streamhandle str$(Toolbar)
+	print #streamhandle Language$
 	close streamhandle
 end sub
 

@@ -19,6 +19,26 @@ sub MakeMenu()
 	Submenu "File", "Transfer...", "to StyledEdit", "", "MenuView"
 	Submenu set "File", "Transfer...", "to Pe", "disable", "MenuView"
 	Submenu set "File", "Transfer...", "to StyledEdit", "disable", "MenuView"
+	if FileExists("/boot/system/apps/Kate/Kate") then
+		Submenu "File", "Transfer...", "to Kate", "", "MenuView"
+		Submenu set "File", "Transfer...", "to Kate", "disable", "MenuView"
+	endif
+	if FileExists("/boot/system/apps/Calligra/Words") then
+		Submenu "File", "Transfer...", "to Calligra", "", "MenuView"
+		Submenu set "File", "Transfer...", "to Calligra", "disable", "MenuView"
+	endif
+	if FileExists("/boot/system/apps/LibreOffice/program/LibreOffice") then
+		Submenu "File", "Transfer...", "to LibreOffice", "", "MenuView"
+		Submenu set "File", "Transfer...", "to LibreOffice", "disable", "MenuView"
+	endif
+	if FileExists("/boot/system/apps/Notepadqq/lib/notepadqq/Notepadqq") then
+		Submenu "File", "Transfer...", "to Notepadqq", "", "MenuView"
+		Submenu set "File", "Transfer...", "to Notepadqq", "disable", "MenuView"
+	endif
+	if FileExists("/boot/system/apps/Koder") then
+		Submenu "File", "Transfer...", "to Koder", "", "MenuView"
+		Submenu set "File", "Transfer...", "to Koder", "disable", "MenuView"
+	endif
 	if FileExists("/boot/system/apps/Rondel/Rondel") and AppName$ <> "Trope" then
 		Submenu "File", "Transfer...", "to Rondel", "", "MenuView"
 		Submenu set "File", "Transfer...", "to Rondel", "disable", "MenuView"
@@ -113,7 +133,7 @@ sub MakeMenu()
 //	submenu "Settings", "Language", "Assist OFF", "", "MenuView"
 //	submenu set "Settings", "Language", "Assist ON", "disable", "MenuView"
 //	submenu set "Settings", "Language", "Assist OFF", "disable", "MenuView"
-//	SetLanguage()
+	SetLanguage()
 	if AppName$ = "Rondel" RondelMoreMenus()
 	
 	//////HELP MENU//////

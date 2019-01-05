@@ -47,6 +47,36 @@ sub TropeFileLoop(Command$)
 			CloseWindow(1)
 			end
 			break
+		case "MenuView:File:Transfer...:to Kate":
+			SaveFile(CurrentFile$)
+			if FileExists("/boot/system/apps/Kate/Kate") system("/boot/system/apps/Kate/Kate '" + CurrentFile$ + "' &")
+			CloseWindow(1)
+			end
+			break
+		case "MenuView:File:Transfer...:to Koder":
+			SaveFile(CurrentFile$)
+			if FileExists("/boot/system/apps/Koder") system("/boot/system/apps/Koder '" + CurrentFile$ + "' &")
+			CloseWindow(1)
+			end
+			break
+		case "MenuView:File:Transfer...:to LibreOffice":
+			SaveFile(CurrentFile$)
+			if FileExists("/boot/system/apps/LibreOffice/program/LibreOffice") system("/boot/system/apps/LibreOffice/program/LibreOffice '" + CurrentFile$ + "' &")
+			CloseWindow(1)
+			end
+			break
+		case "MenuView:File:Transfer...:to Calligra":
+			SaveFile(CurrentFile$)
+			if FileExists("/boot/system/apps/Calligra/Words") system("/boot/system/apps/Calligra/Words '" + CurrentFile$ + "' &")
+			CloseWindow(1)
+			end
+			break
+		case "MenuView:File:Transfer...:to Notepadqq":
+			SaveFile(CurrentFile$)
+			if FileExists("/boot/system/apps/Notepadqq/lib/notepadqq/Notepadqq") system("/boot/system/apps/Notepadqq/lib/notepadqq/Notepadqq '" + CurrentFile$ + "' &")
+			CloseWindow(1)
+			end
+			break
 		case "MenuView:File:Transfer...:to StyledEdit":
 			SaveFile(CurrentFile$)
 			if FileExists("/boot/system/apps/StyledEdit") system("/boot/system/apps/StyledEdit '" + CurrentFile$ + "' &")
@@ -66,6 +96,7 @@ sub TropeFileLoop(Command$)
 			end
 			break
 		case "MenuView:File:Info"
+
 			DocInfo()
 			break
 		default
