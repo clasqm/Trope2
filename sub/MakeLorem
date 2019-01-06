@@ -1,0 +1,16 @@
+sub MakeLorem()
+######Trope subroutine#####
+	local lorem$, loremfile$, streamhandle
+	loremfile$= "/boot/home/config/non-packaged/bin/lorem4trope"
+	system("notify --timeout 5 --title " + AppName$ + " \"Generating Lorem utility\" &")
+	streamhandle = open(loremfile$, "w")
+	restore Loremdata
+	do
+		read lorem$
+		if (lorem$ = "end_of_lorem_data") break
+		print #streamhandle, lorem$
+	loop
+	close streamhandle
+	system("chmod +x " + loremfile$)
+end sub
+

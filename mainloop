@@ -103,6 +103,15 @@ while(not leavingLoop)
 			Language$ = right$(msg$(everyCommand), len(msg$(everyCommand))-27)
 			ChangeTitleBar()
 		endif
+
+		//Check if user selected to install a language
+		if left$(msg$(everyCommand),26)  = "MenuView:Settings:Install:" then
+			Language$ = right$(msg$(everyCommand), len(msg$(everyCommand))-26)
+			system("/boot/system/apps/Terminal pkgman install aspell_" + GetAspellAbbr$())
+			Language$ = ""
+			alert "A restart is required before the new language will be selectable", "Info", "Ok"
+			ChangeTitleBar()
+		endif
 		
 		RefreshStatusbar()
 

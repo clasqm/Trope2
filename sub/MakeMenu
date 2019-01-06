@@ -149,10 +149,7 @@ sub MakeMenu()
 	submenu "Help", "Lorem Ipsum ...", "Poe","", "MenuView"
 	submenu "Help", "Lorem Ipsum ...", "Bible","", "MenuView"
 	submenu "Help", "Lorem Ipsum ...", "Thoreau","", "MenuView"
-	//Only offer to download noninstalled language packs
-//	for f = 0 to 2 	///change this value as more packs become available.
-//		CheckInstalledLangs("pack" + str$(f))
-//	next f	menu "Help", "About", "", "MenuView"
+	menu "Help", "About", "", "MenuView"
 
-	end sub
+end sub
 

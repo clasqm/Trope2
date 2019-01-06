@@ -1,6 +1,7 @@
 sub InsertLoremIpsum(author$)
 ######Trope subroutine#####
 	local authorlength, sentences$, selection, morerandom$, dothis$
+	if not(FileExists("/boot/home/config/non-packaged/bin/lorem4trope")) MakeLorem()
 	authorlength = len(author$)
 	author$ = right$(author$, authorlength - 30)
 	author$ = lower$(author$)
@@ -18,7 +19,7 @@ sub InsertLoremIpsum(author$)
 	end switch
 	selection = alert "Apply extra randomization?", "Yes", "", "No", "none" 
 	if selection = 1 morerandom$ = "--randomize"
-	dothis$ = "lorem --" + author$ + " -s " + sentences$ + " " + morerandom$ 
+	dothis$ = "/boot/home/config/non-packaged/bin/lorem4trope --" + author$ + " -s " + sentences$ + " " + morerandom$ 
 	dothis$ = system$(dothis$)
 	textedit add "EditBox", dothis$
 end sub

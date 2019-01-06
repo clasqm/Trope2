@@ -1,8 +1,18 @@
 sub GetAspellAbbr$()
 ######Trope subroutine#####
 	local abbr$
+	// Only contains languages that are currently available in the Haiku depots
+	//If new ones come around, they have to be entered in both the
+	//GetAspellAbbr$() and the SetLanguage() subroutines 
+
+	//Alphabetical order is not important in this section, except for ease of maintenance
+
 	switch Language$
-		case "English (GB)"
+		case "Belarussian"
+		case "Belarussian language support"
+			abbr$ ="be"
+			break
+		case "English - GB"
 			abbr$ ="en_GB"
 			break
 		case "English (US)"
@@ -13,6 +23,106 @@ sub GetAspellAbbr$()
 			break
 		case "English (CA)"
 			abbr$ ="en_CA"
+			break
+		case "English language support"
+			abbr$ = "en"
+			break
+		case "Bulgarian"
+		case "Bulgarian language support"
+			abbr$ ="bg"
+			break
+		case "Catalan"
+		case "Catalan language support"
+			abbr$ ="ca"
+			break
+		case "Croatian"
+		case "Croatian language support"
+			abbr$ ="hr"
+			break
+		case "Dutch"
+		case "Dutch language support"
+			abbr$ ="nl"
+			break
+		case "Esperanto"
+		case "Esperanto language support"
+			abbr$ ="eo"
+			break
+		case "German - DE"
+			abbr$ ="de_DE"
+			break
+		case "German - CH"
+			abbr$ ="de_CH"
+			break
+		case "German language support"
+			abbr$ ="de"
+			break
+		case "Finnish"
+		case "Finnish language support"
+			abbr$ ="fi"
+			break
+		case "French"
+		case "French language support"
+			abbr$ ="fr"
+			break
+		case "Hungarian"
+		case "Hungarian language support"
+			abbr$ ="hu"
+			break
+		case "Italiian"
+		case "Italian language support"
+			abbr$ ="it"
+			break
+		case "Lithuanian"
+		case "Lithuanian language support"
+			abbr$ ="lt"
+			break
+		case "Polish"
+		case "Polish language support"
+			abbr$ = "pl"
+			break
+		case "Portuguese - BR"
+			abbr$ ="pt_BR"
+			break
+		case "Portuguese (BR) language support"
+			abbr$ ="pt_br"
+			break
+		case "Portuguese - PT"
+			abbr$ ="pt_PT"
+			break
+		case "Portuguese (PT) language support"
+			abbr$ ="pt_pt"
+			break
+		case "Romanian"
+		case "Romanian language support"
+			abbr$ ="ro"
+			break
+		case "Russian"
+		case "Russian language support"
+			abbr$ ="ru"
+			break
+		case "Serbian"
+		case "Serbian language support"
+			abbr$ ="sr"
+			break
+		case "Slovak"
+		case "Slovak language support"
+			abbr$ ="sk"
+			break
+		case "Slovenian"
+		case "Slovenian language support"
+			abbr$ ="sl"
+			break
+		case "Spanish"
+		case "Spanish language support"
+			abbr$ ="es"
+			break
+		case "Swedish"
+		case "Swedish language support"
+			abbr$ ="sv"
+			break
+		case "Ukrainian"
+		case "Ukrainian language support"
+			abbr$ ="uk"
 			break
 		default
 			break
