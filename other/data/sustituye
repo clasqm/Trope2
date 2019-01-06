@@ -1,0 +1,274 @@
+#! /usr/bin/python
+# -*- coding: utf-8 -*-
+
+#####################################################
+#
+# sustituye - substitutes a string given by a regular expression
+#             by a literal string, and overwrites the original
+#             file.
+#           - sustituye una cadena dada por una expresión regular
+#             por una cadena literal, y sobreescribe el archivo
+#             original.
+#
+#   Copyright © 2000,2001,2003,2005,2006,2010 Alberto González Palomo
+#   Author: Alberto González Palomo   <http://www.matracas.org>
+#
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+#
+# 2003-03-28 [AGP] Added recursive functionality.
+# 2003-12-28 [AGP] Updated getopt usage to use GetoptError instead of error.
+#                  Tested with Python 2.2.2.
+# 2005-09-21 [AGP] Added the encoding declaration for UTF-8.
+# 2007-03-08 [AGP] Made it to ignore SVN and CVS subdirectories.
+# 2010-05-31 [AGP] Corrected mistake in UTF-8 encoding function.
+# 2010-07-06 [AGP] Set re.UNICODE flag
+#####################################################
+
+import sys
+import string
+import re
+import os
+import getopt
+
+def display_help():
+    print r'''
+Usage: sustituye [options]... [file]...
+Replaces the 'old' string with the 'new' one, and writes the result
+on the same file.
+If [file] is a directory, it applies recursively to its contents.
+
+  -h, --help          Display this message.
+  -v, --verbose       Report all substitutions.
+  -t, --test          Just test, do not write result to file.
+  -t, --ignore=re     Ignore files that match the regular expression re.
+                      The default is "\.svn|\.CVS", that ignores the
+                     subdirectories of the Subversion and CVS version control
+                     systems.
+  -o, --old=old       'old' string, specified as a regular expression.
+  -n, --new=new       'new' string. Can reference groups in 'old' with the
+                     \group notation.
+
+For example, to substitute appearances of ${whatever} with $[whatever], you
+could do:
+sustituye --old='\${([^}]+)}' --new='$[\1]' file_name
+
+The 'new' string can also include Unicode characters, using either \uXXXX or
+\UXXXXXXXX for characters outside of the BMP. The substitution is made with
+the UTF-8 encoding of the character.
+
+Regular expression quick reference:
+  .        Any but \n.
+  ^        Start of line.
+  $        End of line.
+  *        0 or more times.   *? is the non-greedy version. (minimal match)
+  +        1 or more times.   +?     non-greedy.
+  ?        0 or 1 times.      ??     non-greedy.
+  {m,n}    From m to n times. {m,n}? non-greedy.
+  \        Escape.
+  []       Set of characters.
+  |        Or.
+  (...)    Group.
+  (?...)   Extension. See python re module docs for more info.
+  \number  Matches contents of group number 'number'.
+  \A       Start of string.
+  \b       Empty string at beginning or end of word.
+  \B       Empty string NOT at beginning or end of word.
+  \d       Digit:     [0-9]
+  \D       Non-digit: [^0-9]
+  \s       Space:     [ \t\n\r\f\v]
+  \S       Non-space: [^ \t\n\r\f\v]
+  \w       Alphanumeric: [0-9_] plus chars defined as letters by locale.
+  \W       Non-Alphanumeric.
+  \Z       End of string.
+  \\       Literal backslash.
+
+Report bugs to <matmota@matracas.org>.
+'''
+
+def debug_write(message_line):
+    sys.stderr.write(message_line + '\n')
+
+def main():
+    global verbose
+    global test
+    global re_ignored_filenames
+    global re_old
+    global old_string
+    global new_string
+    global substitution_count
+    global total_substitution_count
+    verbose = 0
+    test = 0
+    old_string = ''
+    new_string = ''
+    substitution_count = 0
+    total_substitution_count = 0
+
+    ignore_pattern = r'\.svn|\.CVS'
+    
+    try:
+        opts, args = getopt.getopt(sys.argv[1:],
+                       'hvto:n:',
+                       ('help','verbose','test','ignore',
+                        'old=','new='))
+    except getopt.GetoptError, problem:
+        print 'Command line option problem: ', problem, '\n'
+        display_help()
+        return(1)
+    
+    for o, a in opts:
+        if (o == '-v')|(o == '--verbose'): verbose = 1
+        if (o == '-t')|(o == '--test'):    test = 1
+        if             (o == '--ignore'):  ignore_pattern = a
+        if             (o == '--old'):     old_string = a
+        if             (o == '--new'):     new_string = a
+        if (o == '-h')|(o == '--help'):
+            display_help()
+            return(0)
+    
+    if (old_string == '') | (not args):
+        display_help()
+        return(1)
+    
+    # Expand Unicode escapes in substitution string.
+    new_string = re.sub(r'\\u([0-9a-fA-F]{4})|\\U([0-9a-fA-F]{8})',
+                        expand_unicode,
+                        new_string)
+
+    re_old = re.compile(old_string, re.MULTILINE | re.UNICODE)
+    re_ignored_filenames = re.compile(ignore_pattern + "$")
+    
+    if not args: args = ['-']
+    for file in args:
+        process(file)
+    
+    if verbose and total_substitution_count > 0:
+        sys.stderr.write("Total substitution count: "
+                         + str(total_substitution_count) + "\n")
+
+def process(file):
+    global verbose
+    global test
+    global re_ignored_filenames
+    global re_old
+    global old_string
+    global new_string
+    global substitution_count
+    global total_substitution_count
+    if os.path.isdir(file):
+        for f in os.listdir(file):
+            if not re_ignored_filenames.match(f):
+                process(os.path.join(file, f))
+        return
+    if not os.path.isfile(file):
+        if verbose:
+            sys.stderr.write("sustituye: Not a file or directory: "
+                     + file + "\n")
+        return
+    if verbose:
+        sys.stderr.write("sustituye: Processing file: " + file + "\n")
+    
+    try:
+        f = open(file, 'r')
+        buffer = f.read()
+    except IOError, error_message:
+        if verbose:
+            sys.stderr.write("sustituye: IOError for file '" + file
+                     + "': " + str(error_message) + "\n")
+        if locals().has_key("f"):
+            if not f.closed: f.close()
+        return
+    
+    f.close()
+    
+    if verbose:
+        for match in re_old.findall(buffer):
+            sys.stderr.write("sustituye:  Replacing "
+                     + str(match) + "\n")
+    buffer,substitution_count = re_old.subn(new_string, buffer)
+    if substitution_count:
+        sys.stderr.write("sustituye:  "
+                 + file + ": "
+                 + str(substitution_count)
+                 + " substitutions made.\n")
+        if not test:
+            f = open(file, 'w')
+            f.write(buffer)
+            f.close()
+        total_substitution_count = total_substitution_count + substitution_count
+        substitution_count = 0
+    elif verbose:
+        sys.stderr.write("sustituye:  Not modified.\n")
+    return
+
+def expand_unicode(matchobj):
+    if matchobj.group(1):
+        # 16 bit code point.
+        code_point = eval("0x" + matchobj.group(1))
+        expanded = utf8(code_point)
+    elif matchobj.group(2):
+        # 32 bit code point.
+        code_point = eval("0x" + matchobj.group(1))
+        expanded = utf8(code_point)
+    else:
+        sys.stderr.write("Error: sustituye: unknown Unicode escape "
+                 + matchobj.group(0))
+        expanded = matchobj.group(0)
+    return expanded
+
+def utf8(code_point):
+    if   code_point < 0x00000080:
+        encoded = chr(code_point)
+    elif code_point < 0x00000800:
+        encoded = (chr((code_point >>  6) & 0x0000001F | 0xC0)
+                +  chr( code_point        & 0x0000003F | 0x80)
+                   )
+    elif code_point < 0x00010000:
+        encoded = (chr((code_point >> 12) & 0x0000000F | 0xE0)
+                +  chr((code_point >>  6) & 0x0000003F | 0x80)
+                +  chr( code_point        & 0x0000003F | 0x80)
+                   )
+    elif code_point < 0x00200000:
+        encoded = (chr((code_point >> 18) & 0x00000007 | 0xF0)
+                +  chr((code_point >> 12) & 0x0000003F | 0x80)
+                +  chr((code_point >>  6) & 0x0000003F | 0x80)
+                +  chr( code_point        & 0x0000003F | 0x80)
+                   )
+    elif code_point < 0x04000000:
+        encoded = (chr((code_point >> 24) & 0x00000003 | 0xF8)
+                +  chr((code_point >> 18) & 0x0000003F | 0x80)
+                +  chr((code_point >> 12) & 0x0000003F | 0x80)
+                +  chr((code_point >>  6) & 0x0000003F | 0x80)
+                +  chr( code_point        & 0x0000003F | 0x80)
+                   )
+    # The following throws a FutureWarning for Python < 2.4. Since it's not
+    # necessary any way (Unicode uses only 24 bits), I'm commenting it out.
+    # Hopefully, by the time this could become useful (if ever), it will
+    # work without warnings.
+    #elif code_point < 0x80000000:
+    #    encoded = (  chr((code_point >> 30) & 0x00000001 | 0xFC)
+    #           + chr((code_point >> 24) & 0x0000003F | 0x80)
+    #           + chr((code_point >> 18) & 0x0000003F | 0x80)
+    #           + chr((code_point >> 12) & 0x0000003F | 0x80)
+    #           + chr((code_point >> 6)  & 0x0000003F | 0x80)
+    #           + chr( code_point        & 0x0000003F | 0x80)
+    #           )
+    else:
+        encoded = chr(0xEF)+chr(0xBF)+chr(0xBD)# 'ï¿½' 0x0000FFDD REPLACEMENT CHARACTER
+    return encoded
+
+#import profile
+#profile.run('main()')
+main()
