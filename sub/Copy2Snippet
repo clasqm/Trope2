@@ -6,7 +6,11 @@ sub Copy2Snippet()
 		alert "Too much text for a snippet!\nTry copying to the clipboard instead.", "OK", "none"
 		return
 	endif
-	if currentsel$ <> "" dropbox add "SnippetDropBox", currentsel$
+	if currentsel$ <> "" then
+		dropbox add "SnippetDropBox", currentsel$
+	else
+		dropbox add "SnippetDropBox", left$(clipboard paste$, 80)
+	endif
 	if dropbox count "SnippetDropBox" = 1 Snippet$ = currentsel$
 	if dropbox count "SnippetDropBox" > 15 dropbox remove "SnippetDropBox", 1
 end sub

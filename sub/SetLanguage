@@ -43,7 +43,7 @@ sub SetLanguage()
 		submenu "Settings", "Language", "English - AU", "", "MenuView"
 		submenu "Settings", "Language", "English - CA", "", "MenuView"
 		submenu "Settings", "Language", "English - GB", "", "MenuView"
-		submenu "Settings", "Language", "English  - US", "", "MenuView"
+		submenu "Settings", "Language", "English - US", "", "MenuView"
 	else
 		submenu "Settings", "Install", "English language support", "", "MenuView"
 	endif
@@ -156,5 +156,4 @@ sub SetLanguage()
 		submenu "Settings", "Install", "Ukrainian language support", "", "MenuView"
 	endif
 end sub
-
 

@@ -7,6 +7,7 @@ sub MakeButtonbar()
 	Tooltip "OpenButton", "Open a  file"
 	Button 84,23 to 122,48, "SaveButton", "Sav☑", "MenuView"
 	Tooltip "SaveButton", "Save this file"
+	Option set "SaveButton", "enabled", 0
 	Button 124,23 to 162,48, "UndoButton", "U/R", "MenuView"
 	Tooltip "UndoButton", "Undo/Redo the last change"
 	Button 164,23 to 202,48, "CutButton", "✄⚳Cut", "MenuView"
@@ -15,6 +16,7 @@ sub MakeButtonbar()
 	Tooltip "CopyButton", "Copy selection to clipboard"
 	Button 244,23 to 282,48, "PasteButton", "⚥Pst", "MenuView"
 	Tooltip "PasteButton", "Paste from clipboard"
+	if clipboard paste$ = "" option set "PasteButton", "enabled", 0
 	Button 284,23 to 322,48, "FindButton", "⚲Find", "MenuView"
 	Tooltip "FindButton", "Find text entered in the searchbox"
 	Button 324,23 to 362,48, "FindAgainButton", "FnA⚲⚲", "MenuView"

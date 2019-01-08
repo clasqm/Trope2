@@ -1,5 +1,7 @@
 sub NewFile()
 ######Trope subroutine#####
+//rewrite this using FileExists() and AppName$
+
 	local whereistrope$,whereisRondel$,RunCommand$
 	if AppName$ = "Trope" then
 	//////////Locate Trope///////////

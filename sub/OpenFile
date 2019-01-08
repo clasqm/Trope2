@@ -47,6 +47,7 @@ sub OpenFile(FileToOpen$, fromwhere$)
 		Alert "A file is already loaded in this window. Please open a new window first.", "OK", "info"
 		return
 	else
+		system("notify --timeout 3 --title " + AppName$ + " \"Opening file\" &")
 		streamhandle = open(FileToOpen$, "r")
 		While (not eof(1))
 			line input #streamhandle tempval$

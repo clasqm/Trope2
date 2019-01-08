@@ -6,7 +6,6 @@ while(not leavingLoop)
 	nCommands = token(message$, msg$(), "|")
 	for everyCommand = 1 to nCommands
 		if(DEBUG and msg$(everyCommand)<>"") print msg$(everyCommand)
-//		LanguageLoop(msg$(everyCommand))
 		TropeFileLoop(msg$(everyCommand))
 		TropeEditLoop(msg$(everyCommand))
 		TropeSettingsLoop(msg$(everyCommand))
@@ -101,6 +100,7 @@ while(not leavingLoop)
 		//Check if user selected a language
 		if left$(msg$(everyCommand),27)  = "MenuView:Settings:Language:" then
 			Language$ = right$(msg$(everyCommand), len(msg$(everyCommand))-27)
+			AddSpellAssistTerms()
 			ChangeTitleBar()
 		endif
 
@@ -117,7 +117,12 @@ while(not leavingLoop)
 
 	next everyCommand
 	//Check if user has just entered text without doing anything else. Like saving.
-	if textedit get "EditBox", "textlength" > 0 FileIsOpen = 1
+	if (textedit get "EditBox", "hasChanged") and textedit get "EditBox", "textlength" >0 then
+		FileIsOpen = 1
+		Menu set "File", "Save", "enable", "MenuView"
+		Menu set "File", "Save As", "enable", "MenuView"
+		Option set "SaveButton", "enabled", 1
+	endif	
 wend
 
 CloseWindow(0)

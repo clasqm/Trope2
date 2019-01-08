@@ -9,10 +9,16 @@ sub TropeEditLoop(Command$)
 		case "MenuView:Edit:Copy":
 		case "CopyButton":
 			Textedit set "EditBox", "copy"
+			menu set "Edit", "Paste", "enable", "MenuView"
+			menu set "Edit", "Copy to Snippet", "enable", "MenuView"
+			option set "PasteButton", "enabled", 1
 			break
 		case "MenuView:Edit:Cut":
 		case "CutButton":
 			Textedit set "EditBox", "cut"
+			menu set "Edit", "Paste", "enable", "MenuView"
+			menu set "Edit", "Copy to Snippet", "enable", "MenuView"
+			option set "PasteButton", "enabled", 1
 			break
 		case "MenuView:Edit:Paste":
 		case "PasteButton":
@@ -54,6 +60,10 @@ sub TropeEditLoop(Command$)
 		case "MenuView:Edit:Select:Clear All":
 			Textedit set "EditBox", "select-all"
 			Textedit set "EditBox", "clear"
+			Menu set "File", "Save", "disable", "MenuView"
+			Menu set "File", "Save As", "disable", "MenuView"
+			Option set "SaveButton", "enabled", 0
+			FileIsOpen = 0
 			break
 		case "MenuView:Edit:Search:Find":
 		case "FindButton"

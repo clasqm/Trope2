@@ -1,0 +1,54 @@
+sub AddSpellAssistTerms()
+	local InputFile$, UserFile$, NewTerm$, gotoline, streamhandle, abbr$
+	abbr$ = GetAspellAbbr$()
+	if FileIsOpen <>0 and CurrentFile$ = "" then
+		SaveFileFirst("language")
+	elseif CurrentFile$ <> "" 
+		SaveFile(CurrentFile$)
+	endif
+	if FileExists(LangDir$ + "/" + abbr$) then
+		system("notify --timeout 4 --title " + AppName$ + " \"Changing Autosuggest terms\" &")
+		InputFile$ = LangDir$ + "/" + abbr$
+		UserFile$ = SettingsDir$ + abbr$
+		system("touch " + UserFile$ )
+		
+			//save the current position
+		gotoline=textedit get "EditBox", "currentline"
+		// need to remove, then recreate the editbox so that we can switch languages.
+		view remove "EditView"
+		// recreate it
+		MakeEditBox()	
+		if CurrentFile$ <> "" then //if empty file, skip this procedure
+			autocomplete=1
+			//reload file
+			OpenFile("--ReVeRtFiLe--","language")
+			//recover position in document
+			Textedit set "EditBox", "gotoline", gotoline
+		end if
+		streamhandle = open(InputFile$, "r")
+		while(not EOF(streamhandle))	
+			line input #streamhandle NewTerm$
+			textedit set "EditBox", "autocomplete", NewTerm$
+		wend
+		close #streamhandle
+		streamhandle = open(UserFile$, "r")
+		while(not EOF(streamhandle))	
+			line input #streamhandle NewTerm$
+			textedit set "EditBox", "autocomplete", NewTerm$
+		wend
+		close #streamhandle
+		submenu set "Settings", "Autosuggest", "Assist OFF", "enable", "MenuView"
+		submenu set "Settings", "Autosuggest", "Assist ON", "disable", "MenuView"
+		textedit set "EditBox", "has-autocompletion", 1
+		textedit set "EditBox", "autocomplete-start", 2
+		autocomplete=1
+		submenu set "Settings", "Autosuggest", "Edit User's word list", "enable", "MenuView"
+	else
+		alert "Spellcheck is available in the " + Language$ + " language, but Autosuggest has not yet been activated.", "OK", "none"
+		submenu set "Settings", "Autosuggest", "Assist OFF", "disable", "MenuView"
+		submenu set "Settings", "Autosuggest", "Assist ON", "disable", "MenuView"
+		textedit set "EditBox", "has-autocompletion", 0
+		autocomplete=0
+	endif
+end sub
+

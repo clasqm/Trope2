@@ -25,5 +25,9 @@ sub OpenWindow()
 	MakeStatusbar()
 		
 	MakeEditBox()
+	
+	if Language$ <> "" AddSpellAssistTerms()
+	ChangeTitleBar()
+
 end sub
 

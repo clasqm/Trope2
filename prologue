@@ -12,11 +12,6 @@ import libclasqm_main
 
 ///////////////////INITIAL SETTING UP STUFF/////////////////
 
-//Create directories and files if they do not yet exist
-system("mkdir -p /boot/home/config/settings/Trope")
-system("touch /boot/home/config/settings/Trope/Trope.settings")
-system("touch /boot/home/config/settings/Trope/Trope.recent")
-
 //Global Variables - declared here just for reference
  xorigin = 0
  yorigin = 0
@@ -38,14 +33,23 @@ dim msg$(1)
 autocomplete=0
 PrintError=0
 Language$ = ""
+LangDir$ = ""
 
 //But these are for real
 AppName$ = "Trope" 
 AppVersion$ = "v0.9"
-SettingsDir$ = "/boot/home/config/settings/Trope/"
-SettingsFile$ = SettingsDir$ +"Trope.settings"
-RecentFile$ = SettingsDir$ +"Trope.recent"
-PrintSetupFile$= SettingsDir$ +"printsetup"
+SettingsDir$ = "/boot/home/config/settings/" + AppName$ + "/"
+SettingsFile$ = SettingsDir$ + AppName$ + ".settings"
+RecentFile$ = SettingsDir$ + AppName$ + ".recent"
+//PrintSetupFile$= SettingsDir$ +"printsetup"
+
+//Create directories and files if they do not yet exist
+system("mkdir -p " + SettingsDir$)
+system("touch " + SettingsFile$)
+system("touch " + RecentFile$)
+
+FindLangdir$()
+if DEBUG = 1 print LangDir$
 
 OpenWindow()
   

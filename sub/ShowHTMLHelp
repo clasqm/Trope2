@@ -1,6 +1,7 @@
 sub ShowHTMLHelp()
 ######Trope subroutine#####
-local help$, helpfile$, streamhandle
+	local help$, helpfile$, streamhandle
+	system("notify --timeout 3 --title " + AppName$ + " \"Generating help\" &")
 	helpfile$ = TempDir$() + "/Trope.html"
 	streamhandle = open(helpfile$, "w")
 	restore Helpdata

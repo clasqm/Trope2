@@ -5,7 +5,7 @@ sub GetSettings()
 		line input #1 tempval$: xorigin = val(tempval$)
 		if xorigin = 0 then //ie if the settings file was empty
 			xorigin = 50 //reset xorigin, use defaults for others
-			close #1
+			close #streamhandle
 			return
 		else
 			line input #1 tempval$: yorigin = val(tempval$)
@@ -15,7 +15,7 @@ sub GetSettings()
 			line input #1 tempval$: Backup = val(tempval$)
 			line input #1 tempval$: Toolbar = val(tempval$)
 			line input #1Language$
+			close #streamhandle
 		end if
-	close streamhandle
 end sub
 
