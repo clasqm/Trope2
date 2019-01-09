@@ -1,8 +1,8 @@
+sub CloseWindow(now)
 ######Trope subroutine#####
 // Close down the main window, but save settings first
-sub CloseWindow(now)
 	if now = 0 SaveFileFirst()
-	SaveSettings()
+	SaveSettings(0)
 	window close "MainWindow"
 	RefreshRecent()
 	return

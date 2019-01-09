@@ -1,4 +1,5 @@
 sub DocInfo()
+######Trope subroutine#####
 	local docinfo$
 	if CurrentFile$ = "" then
 		alert "Please save file first.", "OK", "warning"

@@ -1,4 +1,5 @@
 sub AddSpellAssistTerms()
+######Trope subroutine#####
 	local InputFile$, UserFile$, NewTerm$, gotoline, streamhandle, abbr$
 	abbr$ = GetAspellAbbr$()
 	if FileIsOpen <>0 and CurrentFile$ = "" then

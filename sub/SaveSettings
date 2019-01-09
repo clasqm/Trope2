@@ -1,9 +1,16 @@
-sub SaveSettings()
+sub SaveSettings(offset)
 ######Trope subroutine#####
-	local streamhandle
+	local streamhandle, xorigin, yorigin
 	streamhandle = open(SettingsFile$, "w")
-	print #streamhandle window get "MainWindow", "position-x"
-	print #streamhandle window get "MainWindow", "position-y"
+	xorigin = (window get "MainWindow", "position-x")
+	yorigin = (window get "MainWindow", "position-y")
+	if (offset) then
+		print #streamhandle xorigin + 20
+		print #streamhandle yorigin + 45
+	else
+		print #streamhandle xorigin
+		print #streamhandle yorigin
+	endif
 	print #streamhandle window get "MainWindow", "width"
 	print #streamhandle window get "MainWindow", "height"
 	print #streamhandle str$(WordWrap)

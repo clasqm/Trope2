@@ -1,11 +1,12 @@
 sub FindLangdir$()
+######Trope subroutine#####
 	local thisdir$, AppNameLC$
 		AppNameLC$= lower$(AppName$)
 		thisdir$ = "/boot/system/data/" + AppNameLC$ + "dict" //standard location
 		if FileExists(thisdir$) LangDir$ = thisdir$
 		thisdir$ = "/boot/home/config/data/" + AppNameLC$ + "dict" //manual location
 		if FileExists(thisdir$) LangDir$ = thisdir$
-		thisdir$ = "/boot/home/git/Trope2/other/data/" + AppNameLC$ + "dict" //development location
+		thisdir$ = "/boot/home/git/" + AppName$ + "/other/data/" + AppNameLC$ + "dict" //development location
 		if FileExists(thisdir$) LangDir$ = thisdir$
 	return LangDir$	
 end sub

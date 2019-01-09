@@ -7,7 +7,7 @@ sub TropeSettingsLoop(Command$)
 			submenu set "Settings", "Word Wrap", "Re-Wrap", "enable", "MenuView"
 			WordWrap = 1
 			textedit set "EditBox", "wordwrap", WordWrap
-			SaveSettings()
+			SaveSettings(0)
 			break
 		case "MenuView:Settings:Word Wrap:Off":
 			submenu set "Settings", "Word Wrap", "Off", "disable", "MenuView"
@@ -15,7 +15,7 @@ sub TropeSettingsLoop(Command$)
 			submenu set "Settings", "Word Wrap", "Re-Wrap", "disable", "MenuView"
 			WordWrap = 0
 			textedit set "EditBox", "wordwrap", WordWrap
-			SaveSettings()
+			SaveSettings(0)
 			break
 		case "MenuView:Settings:Word Wrap:Re-Wrap":
 			textedit set "EditBox", "wordwrap", 0
@@ -30,27 +30,27 @@ sub TropeSettingsLoop(Command$)
 			submenu set "Settings", "Backup", "On", "disable", "MenuView"
 			submenu set "Settings", "Backup", "Off", "enable", "MenuView"
 			Backup = 1
-			SaveSettings()
+			SaveSettings(0)
 			break
 		case "MenuView:Settings:Backup:Off":
 			submenu set "Settings", "Backup", "Off", "disable", "MenuView"
 			submenu set "Settings", "Backup", "On", "enable", "MenuView"
 			Backup = 0
-			SaveSettings()
+			SaveSettings(0)
 			break
 		case "MenuView:Settings:Toolbar:Graphics On":
 			TropeToolbarOverlay()
 			submenu set "Settings", "Toolbar", "Graphics On", "disable", "MenuView"
 			submenu set "Settings", "Toolbar", "Graphics Off", "enable", "MenuView"
 			Toolbar = 1
-			SaveSettings()
+			SaveSettings(0)
 			break
 		case "MenuView:Settings:Toolbar:Graphics Off":
 			if view get "ToolbarOverlay", "exists" = 1 view remove "ToolbarOverlay"
 			submenu set "Settings", "Toolbar", "Graphics Off", "disable", "MenuView"
 			submenu set "Settings", "Toolbar", "Graphics On", "enable", "MenuView"
 			Toolbar = 0
-			SaveSettings()
+			SaveSettings(0)
 			break
 		case "MenuView:Settings:Autosuggest:Assist ON":
 			submenu set "Settings", "Autosuggest", "Assist ON", "disable", "MenuView"
