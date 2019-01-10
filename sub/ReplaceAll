@@ -40,7 +40,7 @@ sub ReplaceAll()
 	endif
 	switch tempval1
 		case 1
-			SaveFile(CurrentFile$)
+			SaveFile(CurrentFile$,0)
 			gotoline=textedit get "EditBox", "currentline"
 			tempfile1$ = TempDir$() + "/toreplace"
 			streamhandle = open(tempfile1$, "w")
@@ -60,7 +60,7 @@ sub ReplaceAll()
 			system("rm -f " + tempfile1$)
 			break
 		case 2
-			SaveFile(CurrentFile$)
+			SaveFile(CurrentFile$,0)
 			TropeFileLoop("MenuView:File:Transfer...:to Pe")
 			break
 		case 3

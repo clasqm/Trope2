@@ -6,39 +6,33 @@ sub SetLanguage()
 	// only contains languages that are currently available in the Haiku depots
 	//If new ones come around, they have to be entered in both the
 	//GetAspellAbbr$() and the SetLanguage() subroutines 
-
+	submenu "Settings", "Language", "None", "", "MenuView"
 	//Maintain alphabetical order of langauge NAMES (in English) in this section.
-
 	if instr(installedlang$, "aspell_be") then
 		submenu "Settings", "Language", "Belarussian", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Belarussian language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_bg") then
 		submenu "Settings", "Language", "Bulgarian", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Bulgarian language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_ca") then
 		submenu "Settings", "Language", "Catalan", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Catalan language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_hr") then
 		submenu "Settings", "Language", "Croatian", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Croatian language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_nl") then
 		submenu "Settings", "Language", "Dutch", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Dutch language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_en") then
 		submenu "Settings", "Language", "English - AU", "", "MenuView"
 		submenu "Settings", "Language", "English - CA", "", "MenuView"
@@ -47,7 +41,6 @@ sub SetLanguage()
 	else
 		submenu "Settings", "Install", "English language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_eo") then
 		submenu "Settings", "Language", "Esperanto", "", "MenuView"
 	else
@@ -59,97 +52,81 @@ sub SetLanguage()
 	else
 		submenu "Settings", "Install", "German language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_fi") then
 		submenu "Settings", "Language", "Finnish", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Finnish language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_fr") then
 		submenu "Settings", "Language", "French", "", "MenuView"
 	else
 		submenu "Settings", "Install", "French language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_hu") then
 		submenu "Settings", "Language", "Hungarian", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Hungarian language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_it") then
 		submenu "Settings", "Language", "Italian", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Italian language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_lt") then
 		submenu "Settings", "Language", "Lithuanian", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Lithuanian language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_pl") then
 		submenu "Settings", "Language", "Polish", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Polish language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_pt_br") then
 		submenu "Settings", "Language", "Portuguese - BR", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Portuguese (BR) language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_pt_pt") then
 		submenu "Settings", "Language", "Portuguese - PT", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Portuguese (PT) language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_ro") then
 		submenu "Settings", "Language", "Romanian", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Romanian language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_ru") then
 		submenu "Settings", "Language", "Russian", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Russian language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_sr") then
 		submenu "Settings", "Language", "Serbian", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Serbian language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_sk") then
 		submenu "Settings", "Language", "Slovak", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Slovak language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_sl") then
 		submenu "Settings", "Language", "Slovenian", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Slovenian language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_es") then
 		submenu "Settings", "Language", "Spanish", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Spanish language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_sv") then
 		submenu "Settings", "Language", "Swedish", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Swedish language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_uk") then
 		submenu "Settings", "Language", "Ukrainian", "", "MenuView"
 	else

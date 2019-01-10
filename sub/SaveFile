@@ -1,15 +1,14 @@
-sub SaveFile(SaveFile$)
+sub SaveFile(SaveFile$, notify)
 ######Trope subroutine#####
 	local streamhandle	
-	system("notify --timeout 3 --title " + AppName$ + " \"Saving file\" &")
+	if (notify) system("notify --timeout 3 --title " + AppName$ + " \"Saving file\" &")
 	streamhandle = Open(SaveFile$, "w")
 	print #streamhandle textedit get$ "EditBox"
 	close streamhandle
 	system("mimeset -F '" + SaveFile$ + "'")
-	Menu set "File", "Revert", "enable", "MenuView"
-	Menu set "File", "Save", "disable", "MenuView"
-	Menu set "File", "Save As", "disable", "MenuView"
-	Option set "SaveButton", "enabled", 0
+	TextCount = textedit get "EditBox","textlength"
+	FileIsOpen = 0
+	Saved$ = "saved"
 	ChangeTitleBar()
 end sub
 

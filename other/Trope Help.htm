@@ -1,0 +1,359 @@
+From: <Saved by WebKit>
+Subject: Trope Help
+Date: Fri, 10 Jan 2019 01:10:14 +0200
+MIME-Version: 1.0
+Content-Type: multipart/related;
+	type="text/html";
+	boundary="----=_NextPart_000_0DD7_B12DD151.82782074"
+
+------=_NextPart_000_0DD7_B12DD151.82782074
+Content-Type: text/html
+Content-Transfer-Encoding: quoted-printable
+Content-Location: file:///boot/system/cache/tmp/Trope.html
+
+<html><head><meta charset=3D"UTF-8"><title>Trope Help</title></head><body><=
+h1>
+          TROPE v0.9<br>
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D<br>
+</h1>
+<br>
+<b>
+By Michel Clasquin-Johnson (clasqm)<br>
+MIT-licensed software 2019<br>
+</b>
+<br>
+Trope is a text editor. Nothing special about it, you've used text editors =
+before. But it has a few features you won't find in other text editors.<br>
+<br>
+Previously this was Public Domain software, but since version 0.9 it has be=
+en licensed under the MIT license. If your copy of this program did not con=
+tain the MIT License, you can see it at https://opensource.org/licenses/MIT=
+.<br>
+<br>
+Keyboard shortcuts like ALT-N below assume that you are using the haiku sta=
+ndard keyboard layout. If you have changed this to the Windows/Linux mode t=
+hey should be read as CTRL-N and so forth.<br>
+<br>
+<h2>
+=3D=3D=3DFILE Menu=3D=3D=3D<br>
+</h2>
+<br>
+Operations that affect files.<br>
+<br>
+NEW (or Alt-N)<br>
+Open a new, empty window.<br>
+<br>
+Note that the Settings in this window will reflect the last settings change=
+s you made in ANY window. You open window A and from there new window B, Yo=
+u change settings in window B, You now change back to window A. and decide =
+to open window C. Window C  will open with the setting changes you made in =
+Window B.<br>
+<br>
+OPEN (or Alt-O)<br>
+Open a file. A dialog box appears in which you can choose which file to ope=
+n. Please note that you can also drop a text file on any new, blank window =
+from the Desktop or any Tracker window.You should not, however, drop more t=
+han one file simultaneously. Only one of them will load. If you have a alre=
+ady file open and want to one another, please open a new, empty instance of=
+ the program first<br>
+<br>
+Note: Trope will quite happily open more than one instance of the same file=
+, and you might end up saving different versions over one another.<br>
+<br>
+INSERT<br>
+Insert a file into the current file.<br>
+<br>
+SAVE (or Alt-S)<br>
+Save the file. If it has not been saved before, you will get a chance to ch=
+oose a destination directory and a name for the file. Names with spaces in =
+them should be OK.<br>
+<br>
+SAVE AS<br>
+Save the file under a new name and/or destination.<br>
+<br>
+REVERT<br>
+Lose all changes and go back to the last saved version of your file.Only be=
+comes available once the file has been saved at least once.<br>
+<br>
+Note: Don't ever try to name a file --ReVeRtFiLe-- because that is a code t=
+he app uses internally for this function. Things could get unpredictable in=
+ a hurry.<br>
+<br>
+TRANSFER<br>
+Although Trope is the greatest text editor ever ;-) there are others. This =
+Function allows you to transfer the file to Pe or StyledEdit and closes the=
+ current window. I have other Text Editors and Text-handling utilities in t=
+he works. Once these are available and if you have them installed, they wil=
+l automagically appear in this menu.<br>
+<br>
+QUIT (or press ALT-Q).<br>
+Quit the program<br>
+<br>
+<h2>
+=3D=3D=3DRECENT... Menu=3D=3D=3D<br>
+</h2>
+<br>
+CLEAR RECENT FILES<br>
+Empty the list of recently used files.<br>
+<br>
+The rest of this menu is populated with the ten most recently opened files.=
+ First open a blank window, then click on one of them to open it.<br>
+<br>
+<h2>
+=3D=3D=3DEDIT Menu=3D=3D=3D<br>
+</h2>
+<br>
+UNDO/REDO (or ALT-Z)<br>
+Undoes the last editing action. If nothing else has happened since, you can=
+ then Redo, that is, undo the undo. Sorry, one level of undo only, no buffe=
+r.<br>
+<br>
+CUT, COPY &amp; PASTE<br>
+These commands carry out the usual clipboard actions. Paste only becomes av=
+ailable once something has been copied, either in this program or in anothe=
+r.<br>
+<br>
+COPY TO SNIPPET<br>
+Copy the currently selected text to the Snippets dropdown (see below). Only=
+ becomes available once there is something to copy, either a selection in t=
+he editing area or, failing that, in the cut/paste buffer. Either way, snip=
+pets can only be 80 characters long. If you need more than that, try someth=
+ing like Clipdinger.<br>
+<br>
+CLEAR SELECTION<br>
+Deleted the currently selected text.<br>
+<br>
+CLEAR ALL<br>
+Clear the entire window. If you use this command by mistake, just use the U=
+ndo function (see above).<br>
+<br>
+FIND<br>
+Find the next occurrence of the text in the Find input box in the lower rig=
+ht corner of the window. You can also just type your text in there and pres=
+s ALT-F. Pressing ENTER interfered with the Replace function and was disabl=
+ed<br>
+<br>
+FIND AGAIN<br>
+Find the next occurrence of the previous Find operation<br>
+<br>
+REPLACE<br>
+A fairly primitive GLOBAL, case-dependent search-and-replace using the text=
+ in the Find and Replace input boxes at the bottom of the window. You can a=
+lso just type your text in there and press ALT-R<br>
+<br>
+Note: I have no plans to implement a proper Replace function in Trope.  Fra=
+nkly, I don't see the point of competing with the superb Replace function i=
+n Pe. But it's open-source code: feel free to give it a go<br>
+<br>
+SELECT ALL<br>
+Select all text.<br>
+<br>
+SPELLING<br>
+Gives access to the spell checker and other writer's tools. This occurs in =
+a separate window and editing is disabled until you exit that window. To sp=
+ell-check, you first need to select a language from the Settings Menu. Whil=
+e spell-checking happens, in a separate window, your document will be greye=
+d out  and not editable. UK English is installed by default. Language packs=
+ are separately installed either from the Help menu or via Haikudepot.<br>
+<br>
+You can only spellcheck the entire file, not a selection of text. Please no=
+te that the current version of aspell on Haiku sometimes gets stuck on dete=
+cting High-ASCII and Unicode characters, in which case you will have to jus=
+t choose (i)gnore and move on. Sorry about that<br>
+<br>
+SORT<br>
+Sorts a selected block of lines in four specifiable ways: alphabetical, rev=
+erse alphabetical, numerical and reverse numerical. You cannot sort the ent=
+ire file directly, but you can always select the entire file, and then sort=
+.<br>
+<br>
+SPACING<br>
+These options let you double- or triplespace a document, remove all blank l=
+ines, or insert three spaces at the beginning of every line/paragraph. This=
+ affects the entire document.<br>
+<br>
+CASE<br>
+Change the case of selected text in four different patterns.<br>
+<br>
+WHITE SPACE<br>
+A variety of options to manipulate the appearance of your text. This affect=
+s the entire document.<br>
+<br>
+NUMBERING<br>
+Number the lines in your text. This can not be reversed.<br>
+<br>
+CONVERT<br>
+Switch between Linux/Haiku/Mac OSX and DOS/Windows line endings. You should=
+ not ordinarily need this. But it's there.<br>
+<br>
+<h2>
+=3D=3D=3DASCII Menu=3D=3D=3D<br>
+</h2>
+<br>
+This menu allows you to insert high-ASCII accented and other characters. No=
+te that you can always use Haiku's Character Map.The character is also copi=
+ed to the system clipboard, so you can use it again.<br>
+<br>
+<h2>
+=3D=3D=3DUNICODE Menu=3D=3D=3D<br>
+</h2>
+<br>
+This menu allows you to insert Unicode accented characters. Latin character=
+s only, sorry, and even then only those I can figure out. If you want an ed=
+itor for Cyrillic, Cherokee or CJK character sets, grab the Trope source an=
+d roll your own. You have my blessings. Note that you can always use Haiku'=
+s Character Map.The character is also copied to the system clipboard, so yo=
+u can use it again.<br>
+<br>
+It is quite possible that I have messed up the organisation of these charac=
+ters. Perhaps in your language, an "i" with a macron above and a dot below =
+it is not an  "i" at all but is pronounced  "Aaaaaaaargh"! If so, contact m=
+e (clasqm at gmail dot com) and we'll see what we can do. The same is true =
+if I missed a character somewhere.<br>
+<br>
+<h2>
+=3D=3D=3DSETTINGS Menu=3D=3D=3D<br>
+</h2>
+<br>
+WORD WRAP<br>
+<br>
+WORD WRAP | ON<br>
+WORD WRAP | OFF<br>
+Word wrap is ON by default when you first start the program, but you can ch=
+ange that. Please note that this is a global setting. You can have two wind=
+ows open, one with word wrap on and another with it off. But the next Trope=
+ window you open, whether it is seconds or months later, will have the sett=
+ing of the last window you closed. The setting does not get saved with a sp=
+ecific document.<br>
+<br>
+WORD WRAP | RE-WRAP<br>
+You only need this if you have word wrap set to ON and you have resized the=
+ window. It will redo the word wrapping to fit the new window size.<br>
+<br>
+BACKUP | ON<br>
+BACKUP | OFF<br>
+If set to ON, every time you save your file this creates a duplicate file w=
+ith the extension .bkp in the same directory where your original file resid=
+es. Like word wrap, this is a global setting and will be remembered the nex=
+t time you open the program.<br>
+<br>
+TOOLBAR | GRAPHICS ON<br>
+TOOLBAR | GRAPHICS OFF<br>
+Lets you choose whether to use a graphical overlay over the toolbar. This i=
+s a global setting and is saved when you c;lose the last window.<br>
+<br>
+AUTOSUGGEST | ASSIST ON<br>
+AUTOSUGGEST | ASSIST OFF<br>
+Autosuggest is automatically switched on when starting the program or when =
+you select a new language and if your chosen language has an Autosuggest wo=
+rd list (not all of them do). This option allows you to switch it off and o=
+n manually. This setting does not get saved when closing the last window<br=
+>
+<br>
+To use Autosuggest use the CURSOR RIGHT arrow when a correct suggestion is =
+made.<br>
+<br>
+AUTOSUGGEST | EDIT USER'S WORD LIST<br>
+The Autosuggest word lists were compiled from lists of the thousand most co=
+mmon words in each language, with one- or two-letter words removed. But you=
+ have a much larger vocabulary, of course. This function lets you edit the =
+auxiliary word lists and add your own, unique words. Please note that these=
+ lists are separate for each language and in some cases for variants of a l=
+anguage. Therefore, a word list for UK English will not replicate to one fo=
+r US English. unless you engage in some symlink-fu in the Settings director=
+y.<br>
+<br>
+INSTALL<br>
+Lets you install various aspell dictionaries. A restart is required to make=
+ the new language active and selectable. You can also install these languag=
+e packs from HaikuDepot or the command line. As new dictionaries become ava=
+ilable in Haiku, they will be added to this program.<br>
+<br>
+LANGUAGE<br>
+Select a language for this document. Once you have selected a language (dep=
+ending on which ones you have installed), Autosuggest is switched ON if tha=
+t pack has a functional Autosuggest dictionary - not all do - but you can a=
+lso switch it OFF from the Autosuggest menu (see above). This menu is also =
+used to select a language for spell-Checking. The same language will be aut=
+omatically used in the next document.<br>
+<br>
+<h2>
+=3D=3D=3DHELP Menu=3D=3D=3D<br>
+</h2>
+<br>
+HELP (or ALT-H)<br>
+Display the Help for this program.<br>
+<br>
+HTML HELP<br>
+Display the Help for this program in your default browser.<br>
+<br>
+CHARACTERS ...<br>
+Pastes all currently available High-Ascii and Unicode characters into the c=
+urrent document.<br>
+<br>
+LOREM IPSUM<br>
+insert a specified number of filler text into your document. A variety of o=
+ptions are offered over and above the usual Latin one. This uses the LOREM =
+utility by Per Erik Strandberg (distributed under the GNU GPL3). If you do =
+not have it already, a copy will be generated in /boot/home/config/non-pack=
+aged/bin.<br>
+<br>
+ABOUT<br>
+Display an About box.<br>
+<br>
+<h2>
+=3D=3D=3DTOOLBAR=3D=3D=3D<br>
+</h2>
+<br>
+The toolbar below the menu gives quick access to some of the most commonly-=
+used functions. Toolbar items will always be the same across all Trope-base=
+d applications<br>
+<br>
+<h2>
+=3D=3D=3DStatus Button=3D=3D=3D<br>
+</h2>
+<br>
+The status button in the bottom left corner gives you an APPROXIMATE word a=
+nd page count, based on the assumption anything separated by one or more sp=
+aces or tabs or a new line is a word and that a page is 300 words. It does =
+not update live, only every time you choose a menu command. You can also pr=
+ess the button to update it manually.<br>
+<br>
+<h2>
+=3D=3D=3DSearch Field=3D=3D=3D<br>
+</h2>
+<br>
+The Search field in the bottom right corner lets you enter text to do a cas=
+e-insensitive search of your document. Type the text you want to search for=
+, then press ALT-F.<br>
+<br>
+<h2>
+=3D=3D=3DSnippets Dropdown=3D=3D=3D<br>
+</h2>
+<br>
+The Snippets dropdown in the bottom far right corner allows you to store up=
+ to 15 short pieces of text and paste them elsewhere in your document. Crea=
+te snippets by selecting text and selecting Copy to Snippet from the Edit m=
+enu. To paste a snippet into your text, select the one you want, then press=
+ the button marked P=E2=9C=94 to the right of the dropdown selector.<br>
+<br>
+Snippets are NOT saved between sessions or between documents.<br>
+<br>
+<h2>
+=3D=3D=3DFUTURE ENHANCEMENTS=3D=3D=3D<br>
+</h2>
+<br>
+Trope is a testbed, a code base from which to move on to more interesting p=
+rojects. It will probably not receive further enhancements, but may get som=
+e refinements and code optimisations in the future as new versions of Haiku=
+ and yab become available.<br>
+<br>
+<h2>
+=3D=3D=3DAcknowledgements=3D=3D=3D<br>
+</h2>
+<br>
+This product includes freeware toolbar icons from<br>
+http://hongkiat.com/blog/toolbar-icon-set/<br>
+<br>
+</body></html>
+------=_NextPart_000_0DD7_B12DD151.82782074--

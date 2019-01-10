@@ -2,7 +2,7 @@ sub DocInfo()
 ######Trope subroutine#####
 	local docinfo$
 	if CurrentFile$ = "" then
-		alert "Please save file first.", "OK", "warning"
+		alert "Please save the file first.", "OK", "warning"
 		return
 	endif
 	docinfo$ = "DOCUMENT INFORMATION\n"

@@ -1,5 +1,5 @@
 /////////////Main Message Loop//////////////////
-//THis main loop was getting too large for comfort and has been 
+//This main loop was getting too large for comfort and has been 
 //split up into a number of subroutines
 while(not leavingLoop)
 	sleep 0.01
@@ -46,16 +46,6 @@ while(not leavingLoop)
 				break
 		end switch
 
-		//Check if user pressed ENTER in the search field
-		//if left$(msg$(everyCommand), 12) = "SearchField:" then
-		//	SearchText$ = trim$(mid$(msg$(everyCommand),13))
-		//	if SearchText$ <>"" then
-		//		Textcontrol set "SearchField", ""
-		//		Findstring(SearchText$)
-		//		menu set "Edit", "Find Again", "Enable", "MenuView" //after initial find, find again becomes available
-		//	end if
-		//end if
-
 		//Check if file has been dropped
 		if left$(msg$(everyCommand), 20) = "MainWindow:_Dropped:" then
 			DroppedFile$ = mid$(msg$(everyCommand), 21)
@@ -100,7 +90,15 @@ while(not leavingLoop)
 		//Check if user selected a language
 		if left$(msg$(everyCommand),27)  = "MenuView:Settings:Language:" then
 			Language$ = right$(msg$(everyCommand), len(msg$(everyCommand))-27)
-			AddSpellAssistTerms()
+			If Language$ = "None" then 
+				Language$ = ""
+				submenu set "Settings", "Autosuggest", "Assist OFF", "disable", "MenuView"
+				submenu set "Settings", "Autosuggest", "Assist ON", "disable", "MenuView"
+				submenu set "Settings", "Autosuggest", "Edit User's word list", "disable", "MenuView"
+				textedit set "EditBox", "has-autocompletion", 0
+			else
+				AddSpellAssistTerms()				
+			endif
 			ChangeTitleBar()
 		endif
 
@@ -116,16 +114,21 @@ while(not leavingLoop)
 		RefreshStatusbar()
 
 	next everyCommand
+
 	//Check if user has just entered text without doing anything else. Like saving.
-	if (textedit get "EditBox", "hasChanged") and textedit get "EditBox", "textlength" >0 then
+//	if textedit get "EditBox", "textlength" > 0 FileIsOpen = 1
+	if TextCount <> textedit get "EditBox","textlength" then 
 		FileIsOpen = 1
-		Menu set "File", "Save", "enable", "MenuView"
-		Menu set "File", "Save As", "enable", "MenuView"
-		Option set "SaveButton", "enabled", 1
-	endif	
+		if abs(TextCount - textedit get "EditBox","textlength") >30 then
+			Saved$ = "unsaved"
+			ChangeTitleBar()
+			TextCount = TextCount + 30
+		endif 
+	else
+		FileIsOpen = 0
+		Saved$ = "saved"
+	endif
 wend
-
 CloseWindow(0)
-
 end
 

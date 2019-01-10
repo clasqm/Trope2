@@ -10,21 +10,20 @@ sub TropeFileLoop(Command$)
 			OpenFile()
 			RegenerateRecent()
 			break
-		case "MenuView:File:Save":
+		case "MenuView:File:Save"
 		case "SaveButton"
 			if CurrentFile$ = "" then
 				SaveAs()
 				RegenerateRecent()
 			else
-				SaveFile(CurrentFile$)
+				if Backup <> 0 Backup()
+				SaveFile(CurrentFile$, 1)
 			end if
-			FileIsOpen=1
 			CheckTransfer()
-			if Backup <> 0 Backup()
 			break
 		case "MenuView:File:Save As":
-			SaveAs()
 			if Backup <> 0 Backup()
+			SaveAs()
 			RegenerateRecent()
 			break
 		case "MenuView:File:Insert"
@@ -37,66 +36,70 @@ sub TropeFileLoop(Command$)
 			printer setup PrintSetupFile$
 			Menu set "File",  "Print", "enable", "MenuView"
 			break
-		case "MenuView:File:Print"
-			PrintError=Printer CurrentFile$, PrintSetupFile$, "EditBox"
-			if PrintError Alert "An error occured. What can I say? Printing on Haiku is full of bugs.", "Ok", "info"
-			break		
 		case "MenuView:File:Transfer...:to Pe":
-			SaveFile(CurrentFile$)
+			if Backup <> 0 Backup()
+			SaveFile(CurrentFile$, 0 )
 			if FileExists("/boot/system/apps/Pe/Pe") system("/boot/system/apps/Pe/Pe '" + CurrentFile$ + "' &")
 			CloseWindow(1)
 			end
 			break
 		case "MenuView:File:Transfer...:to Kate":
-			SaveFile(CurrentFile$)
+			if Backup <> 0 Backup()
+			SaveFile(CurrentFile$, 0)
 			if FileExists("/boot/system/apps/Kate/Kate") system("/boot/system/apps/Kate/Kate '" + CurrentFile$ + "' &")
 			CloseWindow(1)
 			end
 			break
 		case "MenuView:File:Transfer...:to Koder":
-			SaveFile(CurrentFile$)
+			if Backup <> 0 Backup()
+			SaveFile(CurrentFile$, 0)
 			if FileExists("/boot/system/apps/Koder") system("/boot/system/apps/Koder '" + CurrentFile$ + "' &")
 			CloseWindow(1)
 			end
 			break
 		case "MenuView:File:Transfer...:to LibreOffice":
-			SaveFile(CurrentFile$)
+			if Backup <> 0 Backup()
+			SaveFile(CurrentFile$, 0)
 			if FileExists("/boot/system/apps/LibreOffice/program/LibreOffice") system("/boot/system/apps/LibreOffice/program/LibreOffice '" + CurrentFile$ + "' &")
 			CloseWindow(1)
 			end
 			break
 		case "MenuView:File:Transfer...:to Calligra":
-			SaveFile(CurrentFile$)
+			if Backup <> 0 Backup()
+			SaveFile(CurrentFile$, 0)
 			if FileExists("/boot/system/apps/Calligra/Words") system("/boot/system/apps/Calligra/Words '" + CurrentFile$ + "' &")
 			CloseWindow(1)
 			end
 			break
 		case "MenuView:File:Transfer...:to Notepadqq":
-			SaveFile(CurrentFile$)
+			if Backup <> 0 Backup()
+			SaveFile(CurrentFile$, 0)
 			if FileExists("/boot/system/apps/Notepadqq/lib/notepadqq/Notepadqq") system("/boot/system/apps/Notepadqq/lib/notepadqq/Notepadqq '" + CurrentFile$ + "' &")
 			CloseWindow(1)
 			end
 			break
 		case "MenuView:File:Transfer...:to StyledEdit":
-			SaveFile(CurrentFile$)
+			if Backup <> 0 Backup()
+			SaveFile(CurrentFile$, 0)
 			if FileExists("/boot/system/apps/StyledEdit") system("/boot/system/apps/StyledEdit '" + CurrentFile$ + "' &")
 			CloseWindow(1)
 			end
 			break
 		case "MenuView:File:Transfer...:to Rondel":
-			SaveFile(CurrentFile$)
+			if Backup <> 0 Backup()
+			SaveFile(CurrentFile$, 0)
 			if FileExists("/boot/system/apps/Rondel/Rondel")system("/boot/system/apps/Rondel/Rondel '" + CurrentFile$ + "' &")
 			CloseWindow(1)
 			end
 			break
 		case "MenuView:File:Transfer...:to Trope":
-			SaveFile(CurrentFile$)
+			if Backup <> 0 Backup()
+			SaveFile(CurrentFile$, 0)
 			if FileExists("/boot/system/apps/Trope/Trope") system("/boot/system/apps/Trope/Trope '" + CurrentFile$ + "' &")
 			CloseWindow(1)
 			end
 			break
 		case "MenuView:File:Info"
-
 			DocInfo()
 			break
 		default

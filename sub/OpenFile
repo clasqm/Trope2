@@ -59,5 +59,6 @@ sub OpenFile(FileToOpen$, fromwhere$)
 		ChangeTitleBar()	
 	end if
 	CheckTransfer() //enable transfer menu now that a file has been opened
+	TextCount = textedit get "EditBox","textlength"
 end sub
 

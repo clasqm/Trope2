@@ -3,7 +3,8 @@
 //Trope v0.9
 
 //By Michel Clasquin-Johnson
-//Public Domain software 2014
+//Public Domain software 2019
+//Previously Public Domain Software 2014
 
 // set DEBUG = 1 to print out all messages on the console
 DEBUG = 1
@@ -34,6 +35,8 @@ autocomplete=0
 PrintError=0
 Language$ = ""
 LangDir$ = ""
+TextCount = 0
+Saved$ = "unsaved"
 
 //But these are for real
 AppName$ = "Trope" 
@@ -41,7 +44,6 @@ AppVersion$ = "v0.9"
 SettingsDir$ = "/boot/home/config/settings/" + AppName$ + "/"
 SettingsFile$ = SettingsDir$ + AppName$ + ".settings"
 RecentFile$ = SettingsDir$ + AppName$ + ".recent"
-//PrintSetupFile$= SettingsDir$ +"printsetup"
 
 //Create directories and files if they do not yet exist
 system("mkdir -p " + SettingsDir$)
@@ -68,7 +70,7 @@ if peek$("refsreceived") <> "" then
 end if
 
 /////////////Main Message Loop//////////////////
-//THis main loop was getting too large for comfort and has been 
+//This main loop was getting too large for comfort and has been 
 //split up into a number of subroutines
 while(not leavingLoop)
 	sleep 0.01
@@ -115,16 +117,6 @@ while(not leavingLoop)
 				break
 		end switch
 
-		//Check if user pressed ENTER in the search field
-		//if left$(msg$(everyCommand), 12) = "SearchField:" then
-		//	SearchText$ = trim$(mid$(msg$(everyCommand),13))
-		//	if SearchText$ <>"" then
-		//		Textcontrol set "SearchField", ""
-		//		Findstring(SearchText$)
-		//		menu set "Edit", "Find Again", "Enable", "MenuView" //after initial find, find again becomes available
-		//	end if
-		//end if
-
 		//Check if file has been dropped
 		if left$(msg$(everyCommand), 20) = "MainWindow:_Dropped:" then
 			DroppedFile$ = mid$(msg$(everyCommand), 21)
@@ -169,7 +161,15 @@ while(not leavingLoop)
 		//Check if user selected a language
 		if left$(msg$(everyCommand),27)  = "MenuView:Settings:Language:" then
 			Language$ = right$(msg$(everyCommand), len(msg$(everyCommand))-27)
-			AddSpellAssistTerms()
+			If Language$ = "None" then 
+				Language$ = ""
+				submenu set "Settings", "Autosuggest", "Assist OFF", "disable", "MenuView"
+				submenu set "Settings", "Autosuggest", "Assist ON", "disable", "MenuView"
+				submenu set "Settings", "Autosuggest", "Edit User's word list", "disable", "MenuView"
+				textedit set "EditBox", "has-autocompletion", 0
+			else
+				AddSpellAssistTerms()				
+			endif
 			ChangeTitleBar()
 		endif
 
@@ -185,17 +185,22 @@ while(not leavingLoop)
 		RefreshStatusbar()
 
 	next everyCommand
+
 	//Check if user has just entered text without doing anything else. Like saving.
-	if (textedit get "EditBox", "hasChanged") and textedit get "EditBox", "textlength" >0 then
+//	if textedit get "EditBox", "textlength" > 0 FileIsOpen = 1
+	if TextCount <> textedit get "EditBox","textlength" then 
 		FileIsOpen = 1
-		Menu set "File", "Save", "enable", "MenuView"
-		Menu set "File", "Save As", "enable", "MenuView"
-		Option set "SaveButton", "enabled", 1
-	endif	
+		if abs(TextCount - textedit get "EditBox","textlength") >30 then
+			Saved$ = "unsaved"
+			ChangeTitleBar()
+			TextCount = TextCount + 30
+		endif 
+	else
+		FileIsOpen = 0
+		Saved$ = "saved"
+	endif
 wend
-
 CloseWindow(0)
-
 end
 
 sub AddSpellAssistTerms()
@@ -205,10 +210,10 @@ sub AddSpellAssistTerms()
 	if FileIsOpen <>0 and CurrentFile$ = "" then
 		SaveFileFirst("language")
 	elseif CurrentFile$ <> "" 
-		SaveFile(CurrentFile$)
+		SaveFile(CurrentFile$,0)
 	endif
 	if FileExists(LangDir$ + "/" + abbr$) then
-		system("notify --timeout 4 --title " + AppName$ + " \"Changing Autosuggest terms\" &")
+		system("notify --timeout 2 --title " + AppName$ + " \"Changing Autosuggest terms\" &")
 		InputFile$ = LangDir$ + "/" + abbr$
 		UserFile$ = SettingsDir$ + abbr$
 		system("touch " + UserFile$ )
@@ -255,13 +260,15 @@ end sub
 
 sub Backup()
 ######Trope subroutine#####
-	if CurrentFile$ <> "" SaveFile(CurrentFile$ + ".bkp")
+	if CurrentFile$ <> "" then
+		system("notify --timeout 1 --title " + AppName$ + " \"Backup in progress.\"  &")
+		SaveFile(CurrentFile$ + ".bkp",0)
+	endif
 end sub
 
 sub ChangeCase(switch$)
 ######Trope subroutine#####
 	local TextToChange$ , temp1$
-	if (DEBUG) print "Now in ChangeCase subroutine"
 	TextToChange$ = textedit get$ "EditBox","Selection"
 	if TextToChange$ = "" then
 		Alert "Please select the text to change case.", "OK", "none"
@@ -345,15 +352,14 @@ sub ChangeTitleBar()
 	if Language$ <> "" then
 		tablang$ = " (" + Language$ + ")"
 		if autocomplete =0 then
-			tablang$ = tablang$ + " - assist OFF)"
+			tablang$ = tablang$ + " - suggest OFF)"
 		elseif autocomplete = 1 then
-			tablang$ = tablang$ +" - assist ON)" 
+			tablang$ = tablang$ +" - suggest ON)" 
 		endif
 	else
 		tablang$ = " (No Language Selected)"
 	endif 
-
-	window set "MainWindow", "Title", AppName$ + ": " + ParsePath2Filename$(CurrentFile$) + tablang$
+	window set "MainWindow", "Title", AppName$ + ": " + ParsePath2Filename$(CurrentFile$) + " (" + Saved$ + ")"+ tablang$
 end sub
 
 sub CharInsertToMenu()
@@ -574,7 +580,7 @@ sub DocInfo()
 ######Trope subroutine#####
 	local docinfo$
 	if CurrentFile$ = "" then
-		alert "Please save file first.", "OK", "warning"
+		alert "Please save the file first.", "OK", "warning"
 		return
 	endif
 	docinfo$ = "DOCUMENT INFORMATION\n"
@@ -635,6 +641,9 @@ sub GetAspellAbbr$()
 	//Alphabetical order is not important in this section, except for ease of maintenance
 
 	switch Language$
+		case "None"
+			abbr$="none"
+			break
 		case "Belarussian"
 		case "Belarussian language support"
 			abbr$ ="be"
@@ -759,21 +768,22 @@ end sub
 
 sub GetSettings()
 ######Trope subroutine#####
-	local streamhandle
+	local streamhandle,tempval$
 	streamhandle = open(SettingsFile$, "r")
-		line input #1 tempval$: xorigin = val(tempval$)
+		line input #streamhandle tempval$
+		xorigin = val(tempval$)
 		if xorigin = 0 then //ie if the settings file was empty
 			xorigin = 50 //reset xorigin, use defaults for others
 			close #streamhandle
 			return
 		else
-			line input #1 tempval$: yorigin = val(tempval$)
-			line input #1 tempval$: xwidth = val(tempval$)
-			line input #1 tempval$: yheight = val(tempval$)
-			line input #1 tempval$: WordWrap = val(tempval$)
-			line input #1 tempval$: Backup = val(tempval$)
-			line input #1 tempval$: Toolbar = val(tempval$)
-			line input #1Language$
+			line input #streamhandle tempval$: yorigin = val(tempval$)
+			line input #streamhandle tempval$: xwidth = val(tempval$)
+			line input #streamhandle tempval$: yheight = val(tempval$)
+			line input #streamhandle tempval$: WordWrap = val(tempval$)
+			line input #streamhandle tempval$: Backup = val(tempval$)
+			line input #streamhandle tempval$: Toolbar = val(tempval$)
+			line input #streamhandle Language$
 			close #streamhandle
 		end if
 end sub
@@ -842,7 +852,7 @@ sub MakeButtonbar()
 	Tooltip "OpenButton", "Open a  file"
 	Button 84,23 to 122,48, "SaveButton", "Sav☑", "MenuView"
 	Tooltip "SaveButton", "Save this file"
-	Option set "SaveButton", "enabled", 0
+//	Option set "SaveButton", "enabled", 0
 	Button 124,23 to 162,48, "UndoButton", "U/R", "MenuView"
 	Tooltip "UndoButton", "Undo/Redo the last change"
 	Button 164,23 to 202,48, "CutButton", "✄⚳Cut", "MenuView"
@@ -887,7 +897,7 @@ sub MakeLorem()
 ######Trope subroutine#####
 	local lorem$, loremfile$, streamhandle
 	loremfile$= "/boot/home/config/non-packaged/bin/lorem4trope"
-	system("notify --timeout 5 --title " + AppName$ + " \"Generating Lorem utility\" &")
+	system("notify --timeout 3 --title " + AppName$ + " \"Generating Lorem utility\" &")
 	streamhandle = open(loremfile$, "w")
 	restore Loremdata
 	do
@@ -911,11 +921,8 @@ sub MakeMenu()
 	Menu "File", "Insert", "", "MenuView"
 	Menu "File", "Save", "S", "MenuView"
 	Menu "File", "Save As", "", "MenuView"
-	Menu set "File", "Save", "disable", "MenuView"
-	Menu set "File", "Save As", "disable", "MenuView"
-	//Menu "File", "Printer setup", "", "MenuView"
-	//Menu "File",  "Print", "P", "MenuView"
-	//if FileExists(PrintSetupFile$) = 0 Menu set "File",  "Print", "disable", "MenuView"
+//	Menu set "File", "Save", "disable", "MenuView"
+//	Menu set "File", "Save As", "disable", "MenuView"
 	Menu "File", "Revert", "", "MenuView"
 	Menu set "File", "Revert", "disable", "MenuView"
 	Submenu "File", "Transfer...", "to Pe", "", "MenuView"
@@ -1006,7 +1013,7 @@ sub MakeMenu()
 	submenu "Edit", "Convert", "Unix (LF) to DOS (CR/LF)", "", "MenuView"
 	//submenu set "Edit", "Search", "Find Again", "Disable", "MenuView"
 	//after initial find, find again becomes available
-	// does not seem to work
+
 	
 	//////////ASCII & UNICODE MENUS/////////
 	CharInsertToMenu()
@@ -1067,7 +1074,7 @@ sub MakeRecent()
 	local tempval$,counter, streamhandle
 	streamhandle = open(RecentFile$, "r")
 	for f = 1 to 10
-		line input #1 tempval$
+		line input #streamhandle tempval$
 		if tempval$ <> "" then
 			counter = counter +1
 			RecentFile$(f) = tempval$
@@ -1124,7 +1131,6 @@ sub NewFile()
 		return
 	endif
 	SaveSettings(1)
-//	SaveOffsetSettings()
 	system(RunCommand$ + " &")
 end sub
 
@@ -1189,6 +1195,7 @@ sub OpenFile(FileToOpen$, fromwhere$)
 		ChangeTitleBar()	
 	end if
 	CheckTransfer() //enable transfer menu now that a file has been opened
+	TextCount = textedit get "EditBox","textlength"
 end sub
 
 sub OpenWindow()
@@ -1204,30 +1211,24 @@ sub OpenWindow()
 	if yheight > peek("DesktopHeight") yheight = peek("DesktopHeight") - 50
 	if xorigin > (peek("DesktopWidth")) - 100 xorigin = 50
 	if yorigin > (peek("DesktopHeight")) - 100 yorigin = 50
-	
 	/////////MAIN WINDOW///////////
 	window open xorigin,yorigin to xorigin + xwidth,yorigin + yheight, "MainWindow", AppName$ + ": Unsaved File "
 	window set "MainWindow", "MaximumTo", maxwidth,800
 	window set "MainWindow", "MinimumTo", xwidth,310
 	View Dropzone "MainWindow" //Make MainWindow droppable
-
 	MakeMenu()
-	
 	MakeButtonbar()
-		
 	MakeStatusbar()
-		
 	MakeEditBox()
-	
 	if Language$ <> "" AddSpellAssistTerms()
 	ChangeTitleBar()
-
 end sub
 
 sub ParsePath2Filename$(Path2Parse$)
 ######Trope subroutine#####
 	local result$,arrsize, a$(1)
-	if Path2Parse$ = "" return ""
+	
+	if Path2Parse$ = "" return "New File"
 	arrsize = token(Path2Parse$,a$(), "/")
 	result$ = a$(arrsize) 
 	return result$
@@ -1259,7 +1260,7 @@ sub RefreshStatusbar()
 ######Trope subroutine#####
 	local TotalWords, TotalChars, TotalPages, tempval$, w$(1), tempval2$
 		TotalChars = textedit get "EditBox", "textlength"
-		if TotalChars >0 FileIsOpen = 1
+		if Totalchars >0 FileIsOpen = 1
 		tempval2$ = textedit get$ "EditBox"
 		TotalWords = token(tempval2$, w$(), " \t\n")
 		tempval$ = " words/"
@@ -1325,7 +1326,7 @@ sub ReplaceAll()
 	endif
 	switch tempval1
 		case 1
-			SaveFile(CurrentFile$)
+			SaveFile(CurrentFile$,0)
 			gotoline=textedit get "EditBox", "currentline"
 			tempfile1$ = TempDir$() + "/toreplace"
 			streamhandle = open(tempfile1$, "w")
@@ -1345,7 +1346,7 @@ sub ReplaceAll()
 			system("rm -f " + tempfile1$)
 			break
 		case 2
-			SaveFile(CurrentFile$)
+			SaveFile(CurrentFile$,0)
 			TropeFileLoop("MenuView:File:Transfer...:to Pe")
 			break
 		case 3
@@ -1373,45 +1374,50 @@ sub SaveAs()
 		return
 	else
 		CurrentFile$ = FileToSave$
-		SaveFile(CurrentFile$)
+		SaveFile(CurrentFile$,1)
 		ChangeTitleBar()
 	end if
 end sub
 
-sub SaveFile(SaveFile$)
+sub SaveFile(SaveFile$, notify)
 ######Trope subroutine#####
 	local streamhandle	
-	system("notify --timeout 3 --title " + AppName$ + " \"Saving file\" &")
+	if (notify) system("notify --timeout 3 --title " + AppName$ + " \"Saving file\" &")
 	streamhandle = Open(SaveFile$, "w")
 	print #streamhandle textedit get$ "EditBox"
 	close streamhandle
 	system("mimeset -F '" + SaveFile$ + "'")
-	Menu set "File", "Revert", "enable", "MenuView"
-	Menu set "File", "Save", "disable", "MenuView"
-	Menu set "File", "Save As", "disable", "MenuView"
-	Option set "SaveButton", "enabled", 0
+	TextCount = textedit get "EditBox","textlength"
+	FileIsOpen = 0
+	Saved$ = "saved"
 	ChangeTitleBar()
 end sub
 
 sub SaveFileFirst(fromwhere$)
 ######Trope subroutine#####
 	local SaveFirst
-	if FileIsOpen <> 0 then
+	if FileIsOpen = 0 then
+		return
+	elseif textedit get "EditBox", "hasChanged"= 0 then
+		return
+	elseif textedit get "EditBox", "textlength" = 0 then
+		return
+	elseif FileIsOpen <> 0 then
 		if fromwhere$ = "language" then
 			if CurrentFile$ = "" then
 				alert "You need to save your file first.", "OK", "warning"
 				SaveAs()
 			else
-				SaveFile(CurrentFile$)
+				SaveFile(CurrentFile$,1)
 			end if
 			return
 		elseif fromwhere$ = "" then
-			SaveFirst= Alert "A file is currently open.\nSave it before proceeding?", "Yes", "No", "", "warning"
+			SaveFirst= Alert "A file is currently open and is " + Saved$ + ".\nSave it before proceeding?", "Yes", "No", "", "warning"
 			if SaveFirst = 1 then
 				if CurrentFile$ = "" then
 					SaveAs()
 				else
-					SaveFile(CurrentFile$)
+					SaveFile(CurrentFile$,1)
 				end if	
 			end if
 		end if
@@ -1458,39 +1464,33 @@ sub SetLanguage()
 	// only contains languages that are currently available in the Haiku depots
 	//If new ones come around, they have to be entered in both the
 	//GetAspellAbbr$() and the SetLanguage() subroutines 
-
+	submenu "Settings", "Language", "None", "", "MenuView"
 	//Maintain alphabetical order of langauge NAMES (in English) in this section.
-
 	if instr(installedlang$, "aspell_be") then
 		submenu "Settings", "Language", "Belarussian", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Belarussian language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_bg") then
 		submenu "Settings", "Language", "Bulgarian", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Bulgarian language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_ca") then
 		submenu "Settings", "Language", "Catalan", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Catalan language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_hr") then
 		submenu "Settings", "Language", "Croatian", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Croatian language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_nl") then
 		submenu "Settings", "Language", "Dutch", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Dutch language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_en") then
 		submenu "Settings", "Language", "English - AU", "", "MenuView"
 		submenu "Settings", "Language", "English - CA", "", "MenuView"
@@ -1499,7 +1499,6 @@ sub SetLanguage()
 	else
 		submenu "Settings", "Install", "English language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_eo") then
 		submenu "Settings", "Language", "Esperanto", "", "MenuView"
 	else
@@ -1511,97 +1510,81 @@ sub SetLanguage()
 	else
 		submenu "Settings", "Install", "German language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_fi") then
 		submenu "Settings", "Language", "Finnish", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Finnish language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_fr") then
 		submenu "Settings", "Language", "French", "", "MenuView"
 	else
 		submenu "Settings", "Install", "French language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_hu") then
 		submenu "Settings", "Language", "Hungarian", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Hungarian language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_it") then
 		submenu "Settings", "Language", "Italian", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Italian language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_lt") then
 		submenu "Settings", "Language", "Lithuanian", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Lithuanian language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_pl") then
 		submenu "Settings", "Language", "Polish", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Polish language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_pt_br") then
 		submenu "Settings", "Language", "Portuguese - BR", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Portuguese (BR) language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_pt_pt") then
 		submenu "Settings", "Language", "Portuguese - PT", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Portuguese (PT) language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_ro") then
 		submenu "Settings", "Language", "Romanian", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Romanian language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_ru") then
 		submenu "Settings", "Language", "Russian", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Russian language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_sr") then
 		submenu "Settings", "Language", "Serbian", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Serbian language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_sk") then
 		submenu "Settings", "Language", "Slovak", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Slovak language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_sl") then
 		submenu "Settings", "Language", "Slovenian", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Slovenian language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_es") then
 		submenu "Settings", "Language", "Spanish", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Spanish language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_sv") then
 		submenu "Settings", "Language", "Swedish", "", "MenuView"
 	else
 		submenu "Settings", "Install", "Swedish language support", "", "MenuView"
 	endif
-
 	if instr(installedlang$, "aspell_uk") then
 		submenu "Settings", "Language", "Ukrainian", "", "MenuView"
 	else
@@ -1632,7 +1615,7 @@ end sub
 sub ShowHTMLHelp()
 ######Trope subroutine#####
 	local help$, helpfile$, streamhandle
-	system("notify --timeout 3 --title " + AppName$ + " \"Generating help\" &")
+	system("notify --timeout 2 --title " + AppName$ + " \"Generating help\" &")
 	helpfile$ = TempDir$() + "/Trope.html"
 	streamhandle = open(helpfile$, "w")
 	restore Helpdata
@@ -1697,7 +1680,7 @@ sub Tools(switch$)
 	if CurrentFile$="" then 
 		SaveFileFirst("language")
 //	else
-//		SaveFile(CurrentFile$)
+//		SaveFile(CurrentFile$,0)
 	endif
 		gotoline=textedit get "EditBox", "currentline"
 		tempfile1$ = TempDir$() + "/toolkit"
@@ -1773,7 +1756,7 @@ end sub
 
 sub TropeEditLoop(Command$)
 ######Trope subroutine#####
-	local response
+	local response, tempval$
 	switch Command$
 		case "MenuView:Edit:Undo/Redo":
 		case "UndoButton"
@@ -1952,21 +1935,20 @@ sub TropeFileLoop(Command$)
 			OpenFile()
 			RegenerateRecent()
 			break
-		case "MenuView:File:Save":
+		case "MenuView:File:Save"
 		case "SaveButton"
 			if CurrentFile$ = "" then
 				SaveAs()
 				RegenerateRecent()
 			else
-				SaveFile(CurrentFile$)
+				if Backup <> 0 Backup()
+				SaveFile(CurrentFile$, 1)
 			end if
-			FileIsOpen=1
 			CheckTransfer()
-			if Backup <> 0 Backup()
 			break
 		case "MenuView:File:Save As":
-			SaveAs()
 			if Backup <> 0 Backup()
+			SaveAs()
 			RegenerateRecent()
 			break
 		case "MenuView:File:Insert"
@@ -1979,66 +1961,70 @@ sub TropeFileLoop(Command$)
 			printer setup PrintSetupFile$
 			Menu set "File",  "Print", "enable", "MenuView"
 			break
-		case "MenuView:File:Print"
-			PrintError=Printer CurrentFile$, PrintSetupFile$, "EditBox"
-			if PrintError Alert "An error occured. What can I say? Printing on Haiku is full of bugs.", "Ok", "info"
-			break		
 		case "MenuView:File:Transfer...:to Pe":
-			SaveFile(CurrentFile$)
+			if Backup <> 0 Backup()
+			SaveFile(CurrentFile$, 0 )
 			if FileExists("/boot/system/apps/Pe/Pe") system("/boot/system/apps/Pe/Pe '" + CurrentFile$ + "' &")
 			CloseWindow(1)
 			end
 			break
 		case "MenuView:File:Transfer...:to Kate":
-			SaveFile(CurrentFile$)
+			if Backup <> 0 Backup()
+			SaveFile(CurrentFile$, 0)
 			if FileExists("/boot/system/apps/Kate/Kate") system("/boot/system/apps/Kate/Kate '" + CurrentFile$ + "' &")
 			CloseWindow(1)
 			end
 			break
 		case "MenuView:File:Transfer...:to Koder":
-			SaveFile(CurrentFile$)
+			if Backup <> 0 Backup()
+			SaveFile(CurrentFile$, 0)
 			if FileExists("/boot/system/apps/Koder") system("/boot/system/apps/Koder '" + CurrentFile$ + "' &")
 			CloseWindow(1)
 			end
 			break
 		case "MenuView:File:Transfer...:to LibreOffice":
-			SaveFile(CurrentFile$)
+			if Backup <> 0 Backup()
+			SaveFile(CurrentFile$, 0)
 			if FileExists("/boot/system/apps/LibreOffice/program/LibreOffice") system("/boot/system/apps/LibreOffice/program/LibreOffice '" + CurrentFile$ + "' &")
 			CloseWindow(1)
 			end
 			break
 		case "MenuView:File:Transfer...:to Calligra":
-			SaveFile(CurrentFile$)
+			if Backup <> 0 Backup()
+			SaveFile(CurrentFile$, 0)
 			if FileExists("/boot/system/apps/Calligra/Words") system("/boot/system/apps/Calligra/Words '" + CurrentFile$ + "' &")
 			CloseWindow(1)
 			end
 			break
 		case "MenuView:File:Transfer...:to Notepadqq":
-			SaveFile(CurrentFile$)
+			if Backup <> 0 Backup()
+			SaveFile(CurrentFile$, 0)
 			if FileExists("/boot/system/apps/Notepadqq/lib/notepadqq/Notepadqq") system("/boot/system/apps/Notepadqq/lib/notepadqq/Notepadqq '" + CurrentFile$ + "' &")
 			CloseWindow(1)
 			end
 			break
 		case "MenuView:File:Transfer...:to StyledEdit":
-			SaveFile(CurrentFile$)
+			if Backup <> 0 Backup()
+			SaveFile(CurrentFile$, 0)
 			if FileExists("/boot/system/apps/StyledEdit") system("/boot/system/apps/StyledEdit '" + CurrentFile$ + "' &")
 			CloseWindow(1)
 			end
 			break
 		case "MenuView:File:Transfer...:to Rondel":
-			SaveFile(CurrentFile$)
+			if Backup <> 0 Backup()
+			SaveFile(CurrentFile$, 0)
 			if FileExists("/boot/system/apps/Rondel/Rondel")system("/boot/system/apps/Rondel/Rondel '" + CurrentFile$ + "' &")
 			CloseWindow(1)
 			end
 			break
 		case "MenuView:File:Transfer...:to Trope":
-			SaveFile(CurrentFile$)
+			if Backup <> 0 Backup()
+			SaveFile(CurrentFile$, 0)
 			if FileExists("/boot/system/apps/Trope/Trope") system("/boot/system/apps/Trope/Trope '" + CurrentFile$ + "' &")
 			CloseWindow(1)
 			end
 			break
 		case "MenuView:File:Info"
-
 			DocInfo()
 			break
 		default
@@ -2072,7 +2058,7 @@ sub TropeHelpLoop(Command$)
 			InstallLanguagePack("pack3")
 			break
 		case "MenuView:Help:About":
-			Alert AppName$ + " " + AppVersion$ + "\nby Michel Clasquin-Johnson\nPublic Domain Software, 2014\n\nWith thanks to Lelldorin for his help on the Find function, and to Rene Gollent, bbjimmy and Humdinger for help with identifying file types.\n\nThis product includes toolbar icons from\nhttp://hongkiat.com/blog/toolbar-icon-set/\n and the Lorem utility by Per Erik Strandberg (distributed under the GNU GPL3)","OK","info"
+			Alert AppName$ + " " + AppVersion$ + "\nby Michel Clasquin-Johnson\nMIT-Licensed Software, 2019\n\nWith thanks to Lelldorin for his help on the Find function, and to Rene Gollent, bbjimmy and Humdinger for help with identifying file types.\n\nThis product includes toolbar icons from\nhttp://hongkiat.com/blog/toolbar-icon-set/\n and the Lorem utility by Per Erik Strandberg (distributed under the GNU GPL3)","OK","info"
 			break
 		default
 			break

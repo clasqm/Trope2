@@ -6,7 +6,7 @@ sub SaveAs()
 		return
 	else
 		CurrentFile$ = FileToSave$
-		SaveFile(CurrentFile$)
+		SaveFile(CurrentFile$,1)
 		ChangeTitleBar()
 	end if
 end sub

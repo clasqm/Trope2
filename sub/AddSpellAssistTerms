@@ -5,10 +5,10 @@ sub AddSpellAssistTerms()
 	if FileIsOpen <>0 and CurrentFile$ = "" then
 		SaveFileFirst("language")
 	elseif CurrentFile$ <> "" 
-		SaveFile(CurrentFile$)
+		SaveFile(CurrentFile$,0)
 	endif
 	if FileExists(LangDir$ + "/" + abbr$) then
-		system("notify --timeout 4 --title " + AppName$ + " \"Changing Autosuggest terms\" &")
+		system("notify --timeout 2 --title " + AppName$ + " \"Changing Autosuggest terms\" &")
 		InputFile$ = LangDir$ + "/" + abbr$
 		UserFile$ = SettingsDir$ + abbr$
 		system("touch " + UserFile$ )
