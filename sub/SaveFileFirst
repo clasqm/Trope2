@@ -1,22 +1,28 @@
 sub SaveFileFirst(fromwhere$)
 ######Trope subroutine#####
 	local SaveFirst
-	if FileIsOpen <> 0 then
+	if FileIsOpen = 0 then
+		return
+	elseif textedit get "EditBox", "hasChanged"= 0 then
+		return
+	elseif textedit get "EditBox", "textlength" = 0 then
+		return
+	elseif FileIsOpen <> 0 then
 		if fromwhere$ = "language" then
 			if CurrentFile$ = "" then
 				alert "You need to save your file first.", "OK", "warning"
 				SaveAs()
 			else
-				SaveFile(CurrentFile$)
+				SaveFile(CurrentFile$,1)
 			end if
 			return
 		elseif fromwhere$ = "" then
-			SaveFirst= Alert "A file is currently open.\nSave it before proceeding?", "Yes", "No", "", "warning"
+			SaveFirst= Alert "A file is currently open and is " + Saved$ + ".\nSave it before proceeding?", "Yes", "No", "", "warning"
 			if SaveFirst = 1 then
 				if CurrentFile$ = "" then
 					SaveAs()
 				else
-					SaveFile(CurrentFile$)
+					SaveFile(CurrentFile$,1)
 				end if	
 			end if
 		end if

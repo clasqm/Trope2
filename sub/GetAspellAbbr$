@@ -8,6 +8,9 @@ sub GetAspellAbbr$()
 	//Alphabetical order is not important in this section, except for ease of maintenance
 
 	switch Language$
+		case "None"
+			abbr$="none"
+			break
 		case "Belarussian"
 		case "Belarussian language support"
 			abbr$ ="be"

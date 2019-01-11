@@ -5,14 +5,13 @@ sub ChangeTitleBar()
 	if Language$ <> "" then
 		tablang$ = " (" + Language$ + ")"
 		if autocomplete =0 then
-			tablang$ = tablang$ + " - assist OFF)"
+			tablang$ = tablang$ + " - suggest OFF)"
 		elseif autocomplete = 1 then
-			tablang$ = tablang$ +" - assist ON)" 
+			tablang$ = tablang$ +" - suggest ON)" 
 		endif
 	else
 		tablang$ = " (No Language Selected)"
 	endif 
-
-	window set "MainWindow", "Title", AppName$ + ": " + ParsePath2Filename$(CurrentFile$) + tablang$
+	window set "MainWindow", "Title", AppName$ + ": " + ParsePath2Filename$(CurrentFile$) + " (" + Saved$ + ")"+ tablang$
 end sub
 

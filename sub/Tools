@@ -4,7 +4,7 @@ sub Tools(switch$)
 	if CurrentFile$="" then 
 		SaveFileFirst("language")
 //	else
-//		SaveFile(CurrentFile$)
+//		SaveFile(CurrentFile$,0)
 	endif
 		gotoline=textedit get "EditBox", "currentline"
 		tempfile1$ = TempDir$() + "/toolkit"

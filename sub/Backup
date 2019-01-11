@@ -1,5 +1,8 @@
 sub Backup()
 ######Trope subroutine#####
-	if CurrentFile$ <> "" SaveFile(CurrentFile$ + ".bkp")
+	if CurrentFile$ <> "" then
+		system("notify --timeout 1 --title " + AppName$ + " \"Backup in progress.\"  &")
+		SaveFile(CurrentFile$ + ".bkp",0)
+	endif
 end sub
 

@@ -1,24 +1,28 @@
 sub ShowHTMLHelp()
 ######Trope subroutine#####
 	local help$, helpfile$, streamhandle
-	system("notify --timeout 3 --title " + AppName$ + " \"Generating help\" &")
-	helpfile$ = TempDir$() + "/Trope.html"
-	streamhandle = open(helpfile$, "w")
-	restore Helpdata
-	do 
-		read help$
-		if (help$ = "end_of_help_data") break
-		if left$(help$,2) = "<h" or left$(help$,3) = "</h" then
-			print #streamhandle, help$ 
-		elseif help$ = "<b>" or help$ = "</b>" then
-			print #streamhandle, help$ 
-		elseif help$ =" " then
-			print #streamhandle, "<br>"
-		else
-			print #streamhandle, help$ + "<br>"
-		end if
-	loop
-	close streamhandle
-	launch helpfile$
+		helpfile$ = TempDir$() + "/" + AppName$ + ".html"
+	if FileExists(helpfile$) then
+		launch helpfile$
+	else
+		system("notify --timeout 2 --title " + AppName$ + " \"Generating HTML help\" &")
+		streamhandle = open(helpfile$, "w")
+		restore Helpdata
+		do 
+			read help$
+			if (help$ = "end_of_help_data") break
+			if left$(help$,2) = "<h" or left$(help$,3) = "</h" then
+				print #streamhandle, help$ 
+			elseif help$ = "<b>" or help$ = "</b>" then
+				print #streamhandle, help$ 
+			elseif help$ =" " then
+				print #streamhandle, "<br>"
+			else
+				print #streamhandle, help$ + "<br>"
+			endif
+		loop
+		close streamhandle
+		launch helpfile$
+	endif
 end sub
 

@@ -26,7 +26,6 @@ sub NewFile()
 		return
 	endif
 	SaveSettings(1)
-//	SaveOffsetSettings()
 	system(RunCommand$ + " &")
 end sub
 

@@ -9,6 +9,7 @@ Written in yab using the Yabadabbadoo IDE
 
 MIT-Licensed software
 
+<<<<<<< HEAD
 Dependencies:
 yab
 aspell
@@ -19,4 +20,6 @@ python
 
 
 
+=======
+>>>>>>> b7bf21ad2ba7cddcb70c47750bf6a90b3709e7d5
 ![Trope](./trope.png)

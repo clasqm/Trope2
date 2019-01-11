@@ -10,11 +10,8 @@ sub MakeMenu()
 	Menu "File", "Insert", "", "MenuView"
 	Menu "File", "Save", "S", "MenuView"
 	Menu "File", "Save As", "", "MenuView"
-	Menu set "File", "Save", "disable", "MenuView"
-	Menu set "File", "Save As", "disable", "MenuView"
-	//Menu "File", "Printer setup", "", "MenuView"
-	//Menu "File",  "Print", "P", "MenuView"
-	//if FileExists(PrintSetupFile$) = 0 Menu set "File",  "Print", "disable", "MenuView"
+//	Menu set "File", "Save", "disable", "MenuView"
+//	Menu set "File", "Save As", "disable", "MenuView"
 	Menu "File", "Revert", "", "MenuView"
 	Menu set "File", "Revert", "disable", "MenuView"
 	Submenu "File", "Transfer...", "to Pe", "", "MenuView"
@@ -105,7 +102,7 @@ sub MakeMenu()
 	submenu "Edit", "Convert", "Unix (LF) to DOS (CR/LF)", "", "MenuView"
 	//submenu set "Edit", "Search", "Find Again", "Disable", "MenuView"
 	//after initial find, find again becomes available
-	// does not seem to work
+
 	
 	//////////ASCII & UNICODE MENUS/////////
 	CharInsertToMenu()

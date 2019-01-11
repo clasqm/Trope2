@@ -11,23 +11,16 @@ sub OpenWindow()
 	if yheight > peek("DesktopHeight") yheight = peek("DesktopHeight") - 50
 	if xorigin > (peek("DesktopWidth")) - 100 xorigin = 50
 	if yorigin > (peek("DesktopHeight")) - 100 yorigin = 50
-	
 	/////////MAIN WINDOW///////////
 	window open xorigin,yorigin to xorigin + xwidth,yorigin + yheight, "MainWindow", AppName$ + ": Unsaved File "
 	window set "MainWindow", "MaximumTo", maxwidth,800
 	window set "MainWindow", "MinimumTo", xwidth,310
 	View Dropzone "MainWindow" //Make MainWindow droppable
-
 	MakeMenu()
-	
 	MakeButtonbar()
-		
 	MakeStatusbar()
-		
 	MakeEditBox()
-	
 	if Language$ <> "" AddSpellAssistTerms()
 	ChangeTitleBar()
-
 end sub
 

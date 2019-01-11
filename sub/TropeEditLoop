@@ -1,6 +1,6 @@
 sub TropeEditLoop(Command$)
 ######Trope subroutine#####
-	local response
+	local response, tempval$
 	switch Command$
 		case "MenuView:Edit:Undo/Redo":
 		case "UndoButton"

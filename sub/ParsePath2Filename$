@@ -1,7 +1,8 @@
 sub ParsePath2Filename$(Path2Parse$)
 ######Trope subroutine#####
 	local result$,arrsize, a$(1)
-	if Path2Parse$ = "" return ""
+	
+	if Path2Parse$ = "" return "New File"
 	arrsize = token(Path2Parse$,a$(), "/")
 	result$ = a$(arrsize) 
 	return result$

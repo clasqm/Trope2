@@ -3,7 +3,7 @@ sub MakeRecent()
 	local tempval$,counter, streamhandle
 	streamhandle = open(RecentFile$, "r")
 	for f = 1 to 10
-		line input #1 tempval$
+		line input #streamhandle tempval$
 		if tempval$ <> "" then
 			counter = counter +1
 			RecentFile$(f) = tempval$

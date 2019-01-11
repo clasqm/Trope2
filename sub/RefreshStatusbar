@@ -2,7 +2,7 @@ sub RefreshStatusbar()
 ######Trope subroutine#####
 	local TotalWords, TotalChars, TotalPages, tempval$, w$(1), tempval2$
 		TotalChars = textedit get "EditBox", "textlength"
-		if TotalChars >0 FileIsOpen = 1
+		if Totalchars >0 FileIsOpen = 1
 		tempval2$ = textedit get$ "EditBox"
 		TotalWords = token(tempval2$, w$(), " \t\n")
 		tempval$ = " words/"

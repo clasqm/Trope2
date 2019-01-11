@@ -3,7 +3,8 @@
 //Trope v0.9
 
 //By Michel Clasquin-Johnson
-//Public Domain software 2014
+//MIT-Licensed software 2019
+//Previously Public Domain Software 2014
 
 // set DEBUG = 1 to print out all messages on the console
 DEBUG = 1
@@ -34,6 +35,8 @@ autocomplete=0
 PrintError=0
 Language$ = ""
 LangDir$ = ""
+TextCount = 0
+Saved$ = "unsaved"
 
 //But these are for real
 AppName$ = "Trope" 
@@ -41,7 +44,6 @@ AppVersion$ = "v0.9"
 SettingsDir$ = "/boot/home/config/settings/" + AppName$ + "/"
 SettingsFile$ = SettingsDir$ + AppName$ + ".settings"
 RecentFile$ = SettingsDir$ + AppName$ + ".recent"
-//PrintSetupFile$= SettingsDir$ +"printsetup"
 
 //Create directories and files if they do not yet exist
 system("mkdir -p " + SettingsDir$)

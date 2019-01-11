@@ -1,20 +1,21 @@
 sub GetSettings()
 ######Trope subroutine#####
-	local streamhandle
+	local streamhandle,tempval$
 	streamhandle = open(SettingsFile$, "r")
-		line input #1 tempval$: xorigin = val(tempval$)
+		line input #streamhandle tempval$
+		xorigin = val(tempval$)
 		if xorigin = 0 then //ie if the settings file was empty
 			xorigin = 50 //reset xorigin, use defaults for others
 			close #streamhandle
 			return
 		else
-			line input #1 tempval$: yorigin = val(tempval$)
-			line input #1 tempval$: xwidth = val(tempval$)
-			line input #1 tempval$: yheight = val(tempval$)
-			line input #1 tempval$: WordWrap = val(tempval$)
-			line input #1 tempval$: Backup = val(tempval$)
-			line input #1 tempval$: Toolbar = val(tempval$)
-			line input #1Language$
+			line input #streamhandle tempval$: yorigin = val(tempval$)
+			line input #streamhandle tempval$: xwidth = val(tempval$)
+			line input #streamhandle tempval$: yheight = val(tempval$)
+			line input #streamhandle tempval$: WordWrap = val(tempval$)
+			line input #streamhandle tempval$: Backup = val(tempval$)
+			line input #streamhandle tempval$: Toolbar = val(tempval$)
+			line input #streamhandle Language$
 			close #streamhandle
 		end if
 end sub
