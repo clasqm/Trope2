@@ -1,25 +1,22 @@
 # Trope
 **by Michel Clasquin-Johnson**
 
-Trope is a text editor with easy access to high-ASCII and some Unicode characters. It also serves as the basis for other, more specialised text editors.
+Trope is a text editor with spell checking and easy access to high-ASCII and some Unicode characters. It also serves as the basis for other, more specialised text editors.
 
-Trope2 is the development name for a ground-up rewrite. Once released, it will install as Trope v0.9
+![Trope](./trope.png)
 
-Written in yab using the Yabadabbadoo IDE
+Trope2 is the development name for a major rewrite. Once installed, it will run as Trope v0.9
+
+Written in yab using the Yabadabbadoo IDE, but you can load the file Rondel.yab in the "binder" directory into the Official yab IDE.
+
+Written under Haiku x86_64 Beta 1, emulated under QEMU on a Linux Host. I am no longer testing my applications on 32-bit Haiku, but you are of course welcome to try..
 
 MIT-Licensed software
 
-<<<<<<< HEAD
-Dependencies:
-yab
-aspell
-perl
-sed
-awk
-python
-
-
-
-=======
->>>>>>> b7bf21ad2ba7cddcb70c47750bf6a90b3709e7d5
-![Trope](./trope.png)
+**Dependencies:**
+* yab
+* aspell
+* perl
+* sed
+* awk
+* python
