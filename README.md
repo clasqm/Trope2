@@ -9,6 +9,14 @@ Written in yab using the Yabadabbadoo IDE
 
 MIT-Licensed software
 
-Binaries: https://sourceforge.net/p/tropeforhaiku/
+Dependencies:
+yab
+aspell
+perl
+sed
+awk
+python
+
+
 
 ![Trope](./trope.png)
