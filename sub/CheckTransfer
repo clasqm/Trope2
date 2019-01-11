@@ -1,6 +1,5 @@
 sub CheckTransfer()
 ######Trope subroutine#####
-	if FileIsOpen = 1 then
 		Submenu set "File", "Transfer...", "to Pe", "enable", "MenuView"
 		Submenu set "File", "Transfer...", "to StyledEdit", "enable", "MenuView"
 		if FileExists("/boot/system/apps/Kate/Kate") Submenu set "File", "Transfer...", "to Kate", "enable", "MenuView"
@@ -10,6 +9,5 @@ sub CheckTransfer()
 		if FileExists("/boot/system/apps/Koder") Submenu set "File", "Transfer...", "to Koder", "enable", "MenuView"
 		if FileExists("boot/system/apps/Rondel/Rondel") and Appname$ <> "Trope" Submenu set "File", "Transfer...", "to Rondel", "enable", "MenuView"
 		if FileExists("/boot/system/apps/Trope/Trope") and Appname$ <> "Rondel" Submenu set "File", "Transfer...", "to Trope", "enable", "MenuView"
-	end if
 end sub
 

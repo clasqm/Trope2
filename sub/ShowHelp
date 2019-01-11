@@ -1,7 +1,7 @@
 sub ShowHelp()
 ######Trope subroutine#####
 	local CenterX, CenterY, help$
-	system("notify --timeout 3 --title " + AppName$ + " \"Generating help\" &")
+	system("notify --timeout 3 --title " + AppName$ + " \"Generating text help\" &")
 	CenterX = INT((Window Get "MainWindow", "Width")/2) + (Window Get "MainWindow","Position-X")
 	CenterY = INT((Window Get "MainWindow", "Height")/2) + (Window Get "MainWindow","Position-Y")
 	Window Open CenterX, CenterY to CenterX + 400, CenterY + 400, "HelpBox", "Trope Help"
