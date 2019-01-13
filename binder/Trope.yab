@@ -7,7 +7,7 @@
 //Previously Public Domain Software 2014
 
 // set DEBUG = 1 to print out all messages on the console
-DEBUG = 1
+DEBUG = 0
 
 import libclasqm_main
 
@@ -1633,9 +1633,9 @@ sub ShowHTMLHelp()
 				print #streamhandle, help$ + "<br>"
 			endif
 		loop
+		close streamhandle
+		launch helpfile$
 	endif
-	close streamhandle
-	launch helpfile$
 end sub
 
 sub SortSelection(switch$)
