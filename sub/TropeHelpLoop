@@ -1,5 +1,6 @@
 sub TropeHelpLoop(Command$)
 ######Trope subroutine#####
+	local about$
 	switch Command$
 		case "HelpBox:_QuitRequested":
 			window close "HelpBox"
@@ -24,7 +25,9 @@ sub TropeHelpLoop(Command$)
 			InstallLanguagePack("pack3")
 			break
 		case "MenuView:Help:About":
-			Alert AppName$ + " " + AppVersion$ + "\nby Michel Clasquin-Johnson\nMIT-Licensed Software, 2019\n\nWith thanks to Lelldorin for his help on the Find function, and to Rene Gollent, bbjimmy and Humdinger for help with identifying file types.\n\nThis product includes toolbar icons from\nhttp://hongkiat.com/blog/toolbar-icon-set/\n and the Lorem utility by Per Erik Strandberg (distributed under the GNU GPL3)","OK","info"
+			about$ = AppName$ + " " + AppVersion$ + "\nby Michel Clasquin-Johnson\nMIT-Licensed Software, 2019\n\nWith thanks to Lelldorin for his help on the Find function, and to Rene Gollent, bbjimmy and Humdinger for help with identifying file types.\n\nThis product includes:\n\nToolbar icons from\nhttp://hongkiat.com/blog/toolbar-icon-set/.\n\nThe lorem utility by Per Erik Strandberg (distributed under the GNU GPL3)."
+			if AppName$ ="Rondel" about$ = about$ + "\n\nThe html2text utility by Aaron Swartz (distributed under the GNU GPL3)."
+			Alert about$,"OK","info"
 			break
 		default
 			break

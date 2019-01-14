@@ -1,6 +1,5 @@
 sub OpenFile(FileToOpen$, fromwhere$)
 ######Trope subroutine#####
-//should really be OpenWindow - called this for historic reasons
 	local tempval$,tempval,revertfile, streamhandle
 	if FileToOpen$ = "--ReVeRtFiLe--" revertfile=1
 	if FileToOpen$ = "" then
@@ -40,6 +39,7 @@ sub OpenFile(FileToOpen$, fromwhere$)
 	if revertfile = 1 then
 		FileIsOpen = 0
 		textedit clear "EditBox"
+		Menu set "File", "Revert", "disable", "MenuView"
 	endif
 	//return if there is a file already loaded
 	//Otherwise, fill in the text area
@@ -49,7 +49,7 @@ sub OpenFile(FileToOpen$, fromwhere$)
 	else
 		system("notify --timeout 3 --title " + AppName$ + " \"Opening file\" &")
 		streamhandle = open(FileToOpen$, "r")
-		While (not eof(1))
+		While (not eof(streamhandle))
 			line input #streamhandle tempval$
 			textedit add "EditBox", tempval$ + "\n"
 		wend
@@ -60,5 +60,6 @@ sub OpenFile(FileToOpen$, fromwhere$)
 	end if
 	CheckTransfer() //enable transfer menu now that a file has been opened
 	TextCount = textedit get "EditBox","textlength"
+	if (DEBUG) print CurrentFile$
 end sub
 

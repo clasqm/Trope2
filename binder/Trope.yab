@@ -7,7 +7,7 @@
 //Previously Public Domain Software 2014
 
 // set DEBUG = 1 to print out all messages on the console
-DEBUG = 0
+DEBUG = 1
 
 import libclasqm_main
 
@@ -122,7 +122,6 @@ while(not leavingLoop)
 			DroppedFile$ = mid$(msg$(everyCommand), 21)
 			if FileIsOpen = 0 then
 				OpenFile(DroppedFile$)
-				CurrentFile$ = DroppedFile$
 				RegenerateRecent()
 				if CurrentFile$ <> "" Menu set "File", "Revert", "enable", "MenuView"
 			end if
@@ -132,7 +131,6 @@ while(not leavingLoop)
 		if left$(msg$(everyCommand), 19) = "MenuView:Recent...:" and mid$(msg$(everyCommand),20) <> "Clear Recent Files" then
 			//if TextFileCheck(mid$(msg$(everyCommand),20)) = 1 break
 			OpenFile(mid$(msg$(everyCommand),20))
-			CurrentFile$ = mid$(msg$(everyCommand),20)
 			FileIsOpen = 1
 			RegenerateRecent()
 			if CurrentFile$ <> "" Menu set "File", "Revert", "enable", "MenuView"
@@ -1134,7 +1132,6 @@ end sub
 
 sub OpenFile(FileToOpen$, fromwhere$)
 ######Trope subroutine#####
-//should really be OpenWindow - called this for historic reasons
 	local tempval$,tempval,revertfile, streamhandle
 	if FileToOpen$ = "--ReVeRtFiLe--" revertfile=1
 	if FileToOpen$ = "" then
@@ -1174,6 +1171,7 @@ sub OpenFile(FileToOpen$, fromwhere$)
 	if revertfile = 1 then
 		FileIsOpen = 0
 		textedit clear "EditBox"
+		Menu set "File", "Revert", "disable", "MenuView"
 	endif
 	//return if there is a file already loaded
 	//Otherwise, fill in the text area
@@ -1183,7 +1181,7 @@ sub OpenFile(FileToOpen$, fromwhere$)
 	else
 		system("notify --timeout 3 --title " + AppName$ + " \"Opening file\" &")
 		streamhandle = open(FileToOpen$, "r")
-		While (not eof(1))
+		While (not eof(streamhandle))
 			line input #streamhandle tempval$
 			textedit add "EditBox", tempval$ + "\n"
 		wend
@@ -1194,6 +1192,7 @@ sub OpenFile(FileToOpen$, fromwhere$)
 	end if
 	CheckTransfer() //enable transfer menu now that a file has been opened
 	TextCount = textedit get "EditBox","textlength"
+	if (DEBUG) print CurrentFile$
 end sub
 
 sub OpenWindow()
@@ -1389,6 +1388,7 @@ sub SaveFile(SaveFile$, notify)
 	FileIsOpen = 0
 	Saved$ = "saved"
 	ChangeTitleBar()
+	if (DEBUG) print CurrentFile$
 end sub
 
 sub SaveFileFirst(fromwhere$)
@@ -1943,6 +1943,7 @@ sub TropeFileLoop(Command$)
 				SaveAs()
 				RegenerateRecent()
 			else
+				if (DEBUG) print CurrentFile$
 				if Backup <> 0 Backup()
 				SaveFile(CurrentFile$, 1)
 			end if
@@ -2036,6 +2037,7 @@ end sub
 
 sub TropeHelpLoop(Command$)
 ######Trope subroutine#####
+	local about$
 	switch Command$
 		case "HelpBox:_QuitRequested":
 			window close "HelpBox"
@@ -2060,7 +2062,9 @@ sub TropeHelpLoop(Command$)
 			InstallLanguagePack("pack3")
 			break
 		case "MenuView:Help:About":
-			Alert AppName$ + " " + AppVersion$ + "\nby Michel Clasquin-Johnson\nMIT-Licensed Software, 2019\n\nWith thanks to Lelldorin for his help on the Find function, and to Rene Gollent, bbjimmy and Humdinger for help with identifying file types.\n\nThis product includes toolbar icons from\nhttp://hongkiat.com/blog/toolbar-icon-set/\n and the Lorem utility by Per Erik Strandberg (distributed under the GNU GPL3)","OK","info"
+			about$ = AppName$ + " " + AppVersion$ + "\nby Michel Clasquin-Johnson\nMIT-Licensed Software, 2019\n\nWith thanks to Lelldorin for his help on the Find function, and to Rene Gollent, bbjimmy and Humdinger for help with identifying file types.\n\nThis product includes:\n\nToolbar icons from\nhttp://hongkiat.com/blog/toolbar-icon-set/.\n\nThe lorem utility by Per Erik Strandberg (distributed under the GNU GPL3)."
+			if AppName$ ="Rondel" about$ = about$ + "\n\nThe html2text utility by Aaron Swartz (distributed under the GNU GPL3)."
+			Alert about$,"OK","info"
 			break
 		default
 			break

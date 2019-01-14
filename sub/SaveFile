@@ -10,5 +10,6 @@ sub SaveFile(SaveFile$, notify)
 	FileIsOpen = 0
 	Saved$ = "saved"
 	ChangeTitleBar()
+	if (DEBUG) print CurrentFile$
 end sub
 

@@ -16,6 +16,7 @@ sub TropeFileLoop(Command$)
 				SaveAs()
 				RegenerateRecent()
 			else
+				if (DEBUG) print CurrentFile$
 				if Backup <> 0 Backup()
 				SaveFile(CurrentFile$, 1)
 			end if

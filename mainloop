@@ -51,7 +51,6 @@ while(not leavingLoop)
 			DroppedFile$ = mid$(msg$(everyCommand), 21)
 			if FileIsOpen = 0 then
 				OpenFile(DroppedFile$)
-				CurrentFile$ = DroppedFile$
 				RegenerateRecent()
 				if CurrentFile$ <> "" Menu set "File", "Revert", "enable", "MenuView"
 			end if
@@ -61,7 +60,6 @@ while(not leavingLoop)
 		if left$(msg$(everyCommand), 19) = "MenuView:Recent...:" and mid$(msg$(everyCommand),20) <> "Clear Recent Files" then
 			//if TextFileCheck(mid$(msg$(everyCommand),20)) = 1 break
 			OpenFile(mid$(msg$(everyCommand),20))
-			CurrentFile$ = mid$(msg$(everyCommand),20)
 			FileIsOpen = 1
 			RegenerateRecent()
 			if CurrentFile$ <> "" Menu set "File", "Revert", "enable", "MenuView"
